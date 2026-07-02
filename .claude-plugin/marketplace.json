@@ -1,61 +1,39 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "knowtis-plugins",
-  "owner": {
-    "name": "jovandyaz",
-    "email": "jovannotty@gmail.com"
-  },
+  "owner": { "name": "jovandyaz", "email": "jovannotty@gmail.com" },
   "metadata": {
     "description": "Internal Claude Code plugins for the Knowtis platform",
-    "version": "0.1.0",
-    "pluginRoot": "./plugins"
+    "version": "0.1.1"
   },
   "plugins": [
     {
       "name": "standards",
-      "source": "./standards",
+      "source": "./plugins/standards",
       "description": "Engineering standards: minimal-comments hook, TypeScript/testing conventions, Conventional Commits.",
       "category": "development",
-      "keywords": [
-        "conventions",
-        "hooks",
-        "code-review"
-      ]
+      "keywords": ["conventions", "hooks", "code-review"]
     },
     {
       "name": "db-ops",
-      "source": "./db-ops",
+      "source": "./plugins/db-ops",
       "description": "Drizzle migration workflow and read-only Postgres investigations.",
       "category": "database",
-      "keywords": [
-        "drizzle",
-        "postgres",
-        "migrations"
-      ]
+      "keywords": ["drizzle", "postgres", "migrations"]
     },
     {
       "name": "delivery",
-      "source": "./delivery",
+      "source": "./plugins/delivery",
       "description": "nx affected CI simulation, Graphite stacked PRs, Vercel/Railway deploy runbooks.",
       "category": "deployment",
-      "keywords": [
-        "nx",
-        "graphite",
-        "vercel",
-        "railway"
-      ]
+      "keywords": ["nx", "graphite", "vercel", "railway"]
     },
     {
       "name": "domain",
-      "source": "./domain",
+      "source": "./plugins/domain",
       "description": "Knowtis domain knowledge: architecture orientation, copilot/AI-gateway invariants, realtime-collaboration rules, and a read-only architect agent.",
       "category": "development",
-      "keywords": [
-        "architecture",
-        "copilot",
-        "crdt",
-        "domain-expert"
-      ]
+      "keywords": ["architecture", "copilot", "crdt", "domain-expert"]
     }
   ]
 }

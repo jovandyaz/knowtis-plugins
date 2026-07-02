@@ -109,7 +109,9 @@ const marketplace = readJson(join(ROOT, '.claude-plugin', 'marketplace.json'));
 const registered = new Set();
 
 if (marketplace) {
-  const pluginRoot = marketplace.metadata?.pluginRoot ?? '.';
+  if (marketplace.metadata?.pluginRoot) {
+    fail(`marketplace.json: metadata.pluginRoot is not prepended to "./"-prefixed sources by the CLI — use full "./plugins/<name>" sources instead`);
+  }
   for (const entry of marketplace.plugins ?? []) {
     registered.add(entry.name);
     if (entry.version) {
@@ -118,7 +120,7 @@ if (marketplace) {
     if (!entry.category) {
       fail(`marketplace.json: "${entry.name}" missing category (belongs in the marketplace entry, not plugin.json)`);
     }
-    const dir = join(ROOT, pluginRoot, entry.source);
+    const dir = join(ROOT, entry.source);
     const manifestPath = join(dir, '.claude-plugin', 'plugin.json');
     if (!existsSync(manifestPath)) {
       fail(`marketplace.json: "${entry.name}" source does not resolve to a plugin (${relative(ROOT, manifestPath)} missing)`);
