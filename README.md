@@ -22,15 +22,27 @@ Working inside the `knowtis` repo, the marketplace and plugins are auto-register
 
 Versions live in each plugin's `.claude-plugin/plugin.json` (single source of truth) with a matching `CHANGELOG.md`.
 
-## Other agents (Codex, OpenCode, Cursor, …)
+## Other agents (Codex, OpenCode, Cursor, Gemini)
 
-Skills are authored in the open [Agent Skills](https://code.claude.com/docs/en/skills) `SKILL.md` format, so they are consumable outside Claude Code. Export a flat, tool-agnostic skills tree with:
+Skills are authored in the open [Agent Skills](https://agentskills.io) `SKILL.md` format and sync verbatim into the cross-tool `.agents/skills/` directory, which Codex, Cursor, Gemini CLI, and OpenCode all discover natively (Claude Code consumes the plugins directly instead):
 
 ```bash
-node scripts/export-skills.mjs            # -> dist/skills/<skill-name>/
+node scripts/sync-agents.mjs                          # emit to dist/ (preview)
+node scripts/sync-agents.mjs --install-repo <repo>    # <repo>/.agents/skills + .opencode/agents
+node scripts/sync-agents.mjs --install-global         # ~/.agents/skills (all tools, all repos)
+node scripts/sync-agents.mjs --check <repo>           # drift check (exit 1 on diff)
 ```
 
-Point OpenCode/Codex/Cursor at `dist/skills/` (or copy it into a repo's `.agents/skills/`). Claude Code-only components degrade cleanly elsewhere: the marketplace/plugin manifests, the `standards` hook, and the `knowtis-architect` agent definition.
+| Tool | Discovers synced skills at | Notes |
+| --- | --- | --- |
+| Codex CLI | `.agents/skills/` (project) · `~/.agents/skills` | Skills only — no agent/command formats |
+| OpenCode | `.agents/skills/` (also reads `.claude/skills/`) | Also gets `knowtis-architect` as `.opencode/agents/knowtis-architect.md` |
+| Cursor | `.agents/skills/` · `.cursor/skills/` | Honors `disable-model-invocation` and `paths` |
+| Gemini CLI | `.agents/skills/` (alias of `.gemini/skills/`) | — |
+
+The sync writes a `.knowtis-plugins-manifest.json` next to the installed skills so re-runs update only what this marketplace owns (foreign skills, e.g. Nx's, are never touched) and stale skills are pruned.
+
+**Degradation outside Claude Code**: the `standards` hook (PostToolUse) and the marketplace/plugin manifests are Claude Code-only; `allowed-tools` is ignored by OpenCode; `disable-model-invocation` (used by delivery's `running-preflight`) is honored only by Claude Code and Cursor — in other tools that skill is model-invocable.
 
 ## Prerequisites
 
