@@ -1,6 +1,6 @@
 {
   "name": "db-ops",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Knowtis database operations: Drizzle migration workflow (generate-commit-migrate, never push on shared DBs) and read-only Postgres investigations with schema-first query planning and PII redaction.",
   "author": {
     "name": "jovandyaz",

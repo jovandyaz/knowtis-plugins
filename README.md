@@ -1,6 +1,6 @@
 # knowtis-plugins
 
-Internal Claude Code plugin marketplace for the [Knowtis](https://github.com/jovandyaz/knowtis-app) platform. Plugin names are unprefixed (`standards`, not `knowtis-standards`) — the marketplace already namespaces them: every install key is `<plugin>@knowtis-plugins`.
+Internal Claude Code plugin marketplace for the [Knowtis](https://github.com/jovandyaz/knowtis-app) platform.
 
 ## Install
 
@@ -20,11 +20,11 @@ Working inside the `knowtis` repo, the marketplace and plugins are auto-register
 | [`delivery`](plugins/delivery/) | deployment | nx affected CI simulation, Graphite stacked-PR workflow, Vercel/Railway deploy runbooks, and a manual `/delivery:running-preflight` check. |
 | [`domain`](plugins/domain/) | development | The project's tribal knowledge: architecture orientation, copilot/AI-gateway safety invariants, realtime-collaboration (Yjs/Hocuspocus) rules, and the read-only `knowtis-architect` agent. |
 
-Versions live in each plugin's `.claude-plugin/plugin.json` (single source of truth) with a matching `CHANGELOG.md`.
+Each plugin is versioned in its `.claude-plugin/plugin.json` with a matching `CHANGELOG.md`.
 
 ## Other agents (Codex, OpenCode, Cursor, Gemini)
 
-Skills are authored in the open [Agent Skills](https://agentskills.io) `SKILL.md` format and sync verbatim into the cross-tool `.agents/skills/` directory, which Codex, Cursor, Gemini CLI, and OpenCode all discover natively (Claude Code consumes the plugins directly instead):
+Skills use the open [Agent Skills](https://agentskills.io) `SKILL.md` format and sync into `.agents/skills/`, which Codex, Cursor, Gemini CLI, and OpenCode discover natively. Sync them with:
 
 ```bash
 node scripts/sync-agents.mjs                          # emit to dist/ (preview)
@@ -39,6 +39,8 @@ node scripts/sync-agents.mjs --check <repo>           # drift check (exit 1 on d
 | OpenCode | `.agents/skills/` (also reads `.claude/skills/`) | Also gets `knowtis-architect` as `.opencode/agents/knowtis-architect.md` |
 | Cursor | `.agents/skills/` · `.cursor/skills/` | Honors `disable-model-invocation` and `paths` |
 | Gemini CLI | `.agents/skills/` (alias of `.gemini/skills/`) | — |
+
+Claude Code isn't in the table because it loads the plugins directly and doesn't read `.agents/`.
 
 The sync writes a `.knowtis-plugins-manifest.json` next to the installed skills so re-runs update only what this marketplace owns (foreign skills, e.g. Nx's, are never touched) and stale skills are pruned.
 

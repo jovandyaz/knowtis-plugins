@@ -1,6 +1,6 @@
 {
   "name": "standards",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Knowtis engineering standards: a PostToolUse hook enforcing the minimal-comments rule on TS/JS edits, plus skills for TypeScript/testing conventions and single-line Conventional Commits.",
   "author": {
     "name": "jovandyaz",
