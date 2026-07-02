@@ -1,0 +1,59 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Validate marketplace
+        run: claude plugin validate .
+
+      - name: Validate plugins (strict)
+        run: |
+          for p in plugins/*/; do
+            echo "::group::$p"
+            claude plugin validate "$p" --strict
+            echo "::endgroup::"
+          done
+
+      - name: Custom validation
+        run: node scripts/validate-plugins.mjs
+
+      - name: Version bump check
+        if: github.event_name == 'pull_request'
+        run: |
+          base="origin/${{ github.base_ref }}"
+          failed=0
+          for dir in $(git diff --name-only "$base"...HEAD -- plugins/ | cut -d/ -f1-2 | sort -u); do
+            name=$(basename "$dir")
+            old=$(git show "$base:$dir/.claude-plugin/plugin.json" 2>/dev/null | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>console.log(JSON.parse(d).version))' 2>/dev/null || echo "")
+            new=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$dir/.claude-plugin/plugin.json','utf8')).version)")
+            if [ -z "$old" ]; then
+              echo "$name: new plugin at $new — OK"
+              continue
+            fi
+            if [ "$(printf '%s\n%s' "$old" "$new" | sort -V | tail -1)" = "$old" ]; then
+              echo "::error::$name changed but version not bumped ($old -> $new)"
+              failed=1
+            fi
+            if ! git diff --name-only "$base"...HEAD -- "$dir/CHANGELOG.md" | grep -q .; then
+              echo "::error::$name changed but CHANGELOG.md was not updated"
+              failed=1
+            fi
+          done
+          exit $failed
