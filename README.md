@@ -4,18 +4,21 @@ Internal Claude Code plugin marketplace for the [Knowtis](https://github.com/jov
 
 ## Install
 
+Add the marketplace and install the plugins once (user scope) — same flow as any public Claude Code marketplace. They then load in every repo; skills only activate when their description matches the task, so they don't get in the way elsewhere.
+
 ```
 /plugin marketplace add jovandyaz/knowtis-plugins
 /plugin install domain@knowtis-plugins
+/plugin install db-ops@knowtis-plugins
+/plugin install delivery@knowtis-plugins
+/plugin install standards@knowtis-plugins
 ```
-
-Working inside the `knowtis` repo, the marketplace and plugins are auto-registered through `.claude/settings.json` (`extraKnownMarketplaces` + `enabledPlugins`) — trusting the folder is enough.
 
 ## Plugins
 
 | Plugin | Category | What it provides |
 | --- | --- | --- |
-| [`standards`](plugins/standards/) | development | Minimal-comments PostToolUse hook, plus skills for TypeScript/testing conventions and single-line Conventional Commits. |
+| [`standards`](plugins/standards/) | development | Skills for TypeScript/testing conventions, the minimal-comments policy, and single-line Conventional Commits. |
 | [`db-ops`](plugins/db-ops/) | database | Drizzle migration discipline (`generate` → commit → `migrate`, never `push` on shared DBs) and a read-only Postgres investigation contract. |
 | [`delivery`](plugins/delivery/) | deployment | nx affected CI simulation, Graphite stacked-PR workflow, Vercel/Railway deploy runbooks, and a manual `/delivery:running-preflight` check. |
 | [`domain`](plugins/domain/) | development | The project's tribal knowledge: architecture orientation, copilot/AI-gateway safety invariants, realtime-collaboration (Yjs/Hocuspocus) rules, and the read-only `knowtis-architect` agent. |
@@ -24,27 +27,22 @@ Each plugin is versioned in its `.claude-plugin/plugin.json` with a matching `CH
 
 ## Other agents (Codex, OpenCode, Cursor, Gemini)
 
-Skills use the open [Agent Skills](https://agentskills.io) `SKILL.md` format and sync into `.agents/skills/`, which Codex, Cursor, Gemini CLI, and OpenCode discover natively. Sync them with:
+Codex, Cursor, Gemini CLI, and OpenCode don't use Claude Code plugins, but they read the open [Agent Skills](https://agentskills.io) `SKILL.md` format from `.agents/skills/`. Install these skills once, globally — the same once-and-done idea as the Claude Code install above:
 
 ```bash
-node scripts/sync-agents.mjs                          # emit to dist/ (preview)
-node scripts/sync-agents.mjs --install-repo <repo>    # <repo>/.agents/skills + .opencode/agents
-node scripts/sync-agents.mjs --install-global         # ~/.agents/skills (all tools, all repos)
-node scripts/sync-agents.mjs --check <repo>           # drift check (exit 1 on diff)
+node scripts/sync-agents.mjs --install-global    # -> ~/.agents/skills (all four tools, every repo)
 ```
 
-| Tool | Discovers synced skills at | Notes |
-| --- | --- | --- |
-| Codex CLI | `.agents/skills/` (project) · `~/.agents/skills` | Skills only — no agent/command formats |
-| OpenCode | `.agents/skills/` (also reads `.claude/skills/`) | Also gets `knowtis-architect` as `.opencode/agents/knowtis-architect.md` |
-| Cursor | `.agents/skills/` · `.cursor/skills/` | Honors `disable-model-invocation` and `paths` |
-| Gemini CLI | `.agents/skills/` (alias of `.gemini/skills/`) | — |
+Re-running is idempotent (it tracks what it owns via a manifest and prunes stale skills; other tools' skills are never touched). Other modes if you need them: `--install-repo <repo>` vendors the skills into one repo's `.agents/skills` and adds an OpenCode agent; `--check <repo>` reports drift; no flag emits to `dist/` for preview.
 
-Claude Code isn't in the table because it loads the plugins directly and doesn't read `.agents/`.
+| Tool | Reads skills from |
+| --- | --- |
+| Codex CLI | `~/.agents/skills` (or `.agents/skills/` per project) |
+| Cursor | `~/.agents/skills` · `.cursor/skills/` |
+| Gemini CLI | `~/.agents/skills` (alias of `~/.gemini/skills/`) |
+| OpenCode | `~/.agents/skills` (also reads `.claude/skills/`) |
 
-The sync writes a `.knowtis-plugins-manifest.json` next to the installed skills so re-runs update only what this marketplace owns (foreign skills, e.g. Nx's, are never touched) and stale skills are pruned.
-
-**Degradation outside Claude Code**: the `standards` hook (PostToolUse) and the marketplace/plugin manifests are Claude Code-only; `allowed-tools` is ignored by OpenCode; `disable-model-invocation` (used by delivery's `running-preflight`) is honored only by Claude Code and Cursor — in other tools that skill is model-invocable.
+**Degradation outside Claude Code**: the marketplace/plugin manifests are Claude Code-only; `allowed-tools` is ignored by OpenCode; `disable-model-invocation` (used by delivery's `running-preflight`) is honored only by Claude Code and Cursor — in other tools that skill is model-invocable.
 
 ## Prerequisites
 
