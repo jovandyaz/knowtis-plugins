@@ -1,6 +1,6 @@
 # Minimal-comments policy
 
-Enforced automatically by this plugin's PostToolUse hook (`scripts/check-comments.mjs`) on TS/TSX/JS/JSX edits.
+In the knowtis repo this is also enforced automatically by a repo-local PostToolUse hook (`.claude/hooks/check-comments.mjs`) on TS/TSX/JS/JSX edits. This skill carries the policy so it applies when reviewing/writing code in any repo or agent.
 
 ## Default
 

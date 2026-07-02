@@ -9,7 +9,7 @@ Apply these standards to any TypeScript/JavaScript you write or review. Full det
 
 - [references/typescript.md](references/typescript.md) — imports, type safety, enums, error handling
 - [references/testing.md](references/testing.md) — Vitest structure, mocking, assertions, coverage expectations
-- [references/comments-policy.md](references/comments-policy.md) — the minimal-comments rule (also enforced by this plugin's PostToolUse hook)
+- [references/comments-policy.md](references/comments-policy.md) — the minimal-comments rule (also enforced by a repo-local hook in the knowtis repo)
 
 ## Non-negotiables (quick check)
 
