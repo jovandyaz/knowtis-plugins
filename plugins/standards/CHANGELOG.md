@@ -4,6 +4,15 @@ All notable changes to the `standards` plugin.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.1] - 2026-08-14
+
+### Changed
+
+- Point the docs at where minimal-comments enforcement actually lives. It moved from a repo-local PostToolUse hook in knowtis to a user-level PreToolUse hook (`~/.claude/hooks/comment-policy.cjs`) that blocks the write in every repo, plus a `knowtis/minimal-comments` ESLint rule for CI. A PostToolUse hook cannot block — it only reports after the file is already written.
+- Cite the sources the policy comes from (Clean Code ch. 4, Google TypeScript Style Guide) instead of presenting it as a house convention.
+- Add the two categories the policy was missing: informative labels on opaque literals, and the ban on multi-line `/* */` blocks.
+- Raise the comment-length gate from 3 lines to 6, matching what is enforced.
+
 ## [0.2.0] - 2026-07-02
 
 ### Removed
