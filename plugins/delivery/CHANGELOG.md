@@ -4,6 +4,10 @@ All notable changes to the `delivery` plugin.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 0.2.0
+
+- `stacking-prs` rewritten for GitHub-native stacked PRs (`gh-stack`); Graphite retired. Adds the CodeRabbit 100-file cap, the manual-trigger routine, and the base-branch-deletion / `gh pr edit` gotchas.
+
 ## [0.1.2] - 2026-07-02
 
 ### Changed
