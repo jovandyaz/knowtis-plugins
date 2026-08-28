@@ -1,6 +1,6 @@
 {
   "name": "delivery",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Knowtis delivery workflows: nx affected CI simulation, Graphite stacked PRs with CodeRabbit-first review, Vercel/Railway deploy runbooks, and a manual preflight check.",
   "author": {
     "name": "jovandyaz",
