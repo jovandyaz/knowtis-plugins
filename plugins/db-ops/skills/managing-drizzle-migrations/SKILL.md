@@ -24,7 +24,7 @@ pnpm db:migrate:run
 
 ## Production application — hands-off
 
-Railway's pre-deploy command (`railway.toml`) is the ONLY production migrator: `pnpm exec tsx apps/api/src/database/migrate.ts` runs between build and release with the service's own `DATABASE_URL`, takes a Postgres advisory lock (concurrent deploys serialize), and a non-zero exit **aborts the deploy** — the app never boots against an un-migrated schema. CI does not run migrations; neither should you, manually, against prod.
+Railway's pre-deploy command (`railway.toml`) is the only production migrator: `pnpm exec tsx apps/api/src/database/migrate.ts` runs between build and release with the service's own `DATABASE_URL`, takes a Postgres advisory lock, and aborts the deploy on failure. CI applies committed migrations only to its disposable test database; never migrate production manually.
 
 ## Zero-downtime changes
 
@@ -38,4 +38,4 @@ Additive columns with a `DEFAULT` are safe in one step.
 
 ## When migrate fails on an existing DB (e.g. `42710 enum already exists`)
 
-The DB was push-managed and has no `drizzle.__drizzle_migrations` tracking table. Baseline it once: `pnpm db:baseline` (schema already current) or `pnpm db:baseline <migration_tag>` (record only up to a tag). Idempotent. Dev and prod are already tracked — this applies only to adopting a new push-managed database.
+The DB was push-managed and has no `drizzle.__drizzle_migrations` tracking table. First verify that its live schema is equivalent to the migration range being recorded; abort on any mismatch because baseline records hashes without applying DDL. Only then run `pnpm db:baseline` (schema current) or `pnpm db:baseline <migration_tag>` (record through that tag). Dev and prod are already tracked — this applies only to adopting a new push-managed database.

@@ -34,7 +34,7 @@ You are **read-only by design**: you answer, review, and advise. You never edit 
 ## How you work
 
 1. Ground every answer in this plugin's skills — invoke them via the Skill tool rather than re-deriving:
-   - `orienting-in-knowtis` — repo layout, module boundaries, alias namespaces, footguns.
+   - `orienting` — repo layout, module boundaries, alias namespaces, footguns.
    - `building-copilot-features` — copilot/AI-gateway invariants (HITL, injection guard, fallback chain, BYOK, retrieval, evals).
    - `wiring-realtime-collaboration` — Yjs/Hocuspocus handshake, persistence guards, broadcast semantics.
 2. When the question outruns the skills, read the canonical repo docs (`docs/ARCHITECTURE.md`, `docs/AI.md`, `docs/MCP.md`, `docs/AUTH.md`, `docs/PERMISSIONS.md`) and the code itself. Treat `docs/superpowers/specs/` as historical rationale only.

@@ -4,6 +4,15 @@ All notable changes to the `domain` plugin.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.0] - 2026-08-29
+
+### Changed
+
+- Renamed `orienting-in-knowtis` to project-scoped `orienting` and narrowed its triggers around the Nx skills.
+- Synchronized the architecture map with backoffice, OAuth data access, and all 18 `@knowtis/*` aliases.
+- Added realtime-collaboration eval cases.
+- Documented forced BYOK recovery and the zero-length external Yjs update guard.
+
 ## [0.1.1] - 2026-07-02
 
 ### Changed

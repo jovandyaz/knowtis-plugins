@@ -4,6 +4,16 @@ All notable changes to the `delivery` plugin.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] - 2026-08-29
+
+### Changed
+
+- Renamed `deploying-knowtis` to project-scoped `deploying`.
+- Replaced the obsolete Graphite workflow with GitHub's `gh-stack` extension.
+- Synchronized CI and deploy guidance with Nx v5 SHA detection, affected typechecking, backoffice, migration drift checks, and gated Railway deploys.
+- Added eval cases for deploy and preflight behavior.
+- Aligned API/MCP healthchecks, local test migrations, migration-drift detection, and non-interactive `gh stack` commands with production behavior.
+
 ## [0.2.0] - 2026-08-28
 
 ### Changed

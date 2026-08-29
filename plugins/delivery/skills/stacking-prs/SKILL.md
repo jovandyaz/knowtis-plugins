@@ -1,27 +1,22 @@
 ---
 name: stacking-prs
-description: Manages the Knowtis pull-request workflow — GitHub-native stacked PRs (gh-stack), CodeRabbit-first review, and branch conventions. Use when creating a PR, splitting a large change into a stack, responding to review, or when asked "cómo abro el PR", "stack", "gh stack", or "CodeRabbit". Not for commit-message formatting (use standards' writing-conventional-commits).
+description: Manages this repository's GitHub-native stacked PR workflow with the gh-stack extension, CodeRabbit review, and branch conventions. Use when creating PRs, splitting work into a stack, linking existing PRs, merging a stack, or responding to CodeRabbit. Not for commit-message formatting (use writing-conventional-commits).
 ---
 
-# Stacking PRs (GitHub native + CodeRabbit)
+# Stacking PRs (GitHub + CodeRabbit)
 
-Knowtis uses **GitHub's native stacked pull requests** (public preview since 2026-07-30) and **CodeRabbit** for automated first-pass review. Graphite was retired on 2026-08-28 to drop a dependency: the native feature rebases and retargets a stack on GitHub's own servers when a layer merges, which is the only thing Graphite was doing for us.
-
-## Setup (once per machine)
-
-```bash
-gh extension install github/gh-stack
-```
+Knowtis uses GitHub's `gh-stack` extension for stacked PRs and CodeRabbit for automated first-pass review.
 
 ## Workflow
 
 1. Branch with a Conventional prefix: `feat/<name>`, `fix/<name>`, `docs/<name>`.
-2. Build the stack bottom-up. Either track it locally from the start — `gh stack init`, `gh stack add <branch>`, `gh stack submit` — or open each PR with `gh pr create --base <branch below>` and adopt the chain afterwards with `gh stack link <bottom> … <top>` (PR numbers or branch names, bottom first). `link` needs no local tracking and never removes PRs from an existing stack.
-3. **Keep every PR under 100 changed files** — CodeRabbit refuses larger ones ("Review skipped: N files exceed the limit of 100") and the cap is not configurable. Check with `git diff --name-only <base> <head> | wc -l` before opening.
-4. CodeRabbit reviews stacked PRs too (`.coderabbit.yaml` `base_branches` matches Conventional-prefixed bases). It does **not** auto-trigger on this repo: comment `@coderabbitai full review`, then count inline comments via the API — a green check with zero comments is a skipped review, not a clean one. The fair-usage limit does not queue; re-trigger after the window it names.
-5. **Address CodeRabbit before requesting human review** — an unresolved thread is a not-ready signal.
-6. Merge bottom-up. `gh stack merge` lands everything up to a chosen PR atomically; merging one PR from the GitHub UI also works, and the layers above rebase and retarget automatically. Do not rebase a stacked branch by hand after a merge — let GitHub do it, then `gh stack sync` locally.
-7. Detailed context lives in the PR description; commits stay single-line (see the standards plugin).
+2. Install the extension once with `gh extension install github/gh-stack` if `gh stack` is unavailable.
+3. Build a tracked stack with `gh stack init <bottom-branch>`, `gh stack add <next-branch>`, and `gh stack submit --auto --open`, or adopt existing PRs with `gh stack link <bottom> … <top>`. `link` takes PRs or branches bottom-first, creates no local tracking, and only adds membership.
+4. Keep every PR under 100 changed files; CodeRabbit refuses larger reviews. Check with `git diff --name-only <base> <head> | wc -l` before opening.
+5. Trigger CodeRabbit with `@coderabbitai full review` and confirm inline comments exist. A green check without comments can mean the review was skipped; fair-usage failures must be retried after the named window.
+6. Address all review feedback before human review.
+7. Merge with an explicit target, for example `gh stack merge <pr-number> --yes`, then run `gh stack sync` locally. Never manually rebase a stacked branch after GitHub merges and retargets a layer.
+8. Detailed context lives in the PR description; commits stay single-line.
 
 ## Gotchas
 
@@ -33,5 +28,5 @@ gh extension install github/gh-stack
 ## Rules of thumb
 
 - A PR that mixes a refactor with a behavior change should be split into a stack (refactor below, behavior on top).
-- Merge in order; never a mid-stack PR first.
-- CI must be green per PR; `nx affected` keeps each stack level cheap.
+- Do not merge a middle layer independently; use the stack-aware merge flow.
+- CI must be green per-PR; `nx affected` keeps each stack level cheap.

@@ -1,29 +1,32 @@
 ---
 name: running-affected-ci
-description: Simulates and interprets the Knowtis CI pipeline locally using nx affected — which projects a change touches, which checks will run, and which deploy jobs will fire. Use before pushing, when asked "will this pass CI", "qué proyectos afecta", "why did CI deploy/not deploy", or to reproduce a CI failure locally. Not for the deploy mechanics themselves (use deploying-knowtis).
+description: Simulates and interprets this repository's Nx-affected CI pipeline, including checks and deploy gating. Use before pushing, when asked which projects are affected, why a deploy job did or did not run, or to reproduce CI locally. Not for monitoring a running pipeline (use monitor-ci), generic Nx task usage (use nx-run-tasks), or deploy mechanics (use deploying).
 ---
 
 # Running affected CI locally
 
-The pipeline (`.github/workflows/ci.yml`) is **Nx-affected**: only impacted projects are linted/tested/built, and deploy jobs are gated on which apps were affected. `nrwl/nx-set-shas@v4` picks the comparison SHAs in CI; locally you compare against `main`.
+The pipeline (`.github/workflows/ci.yml`) is **Nx-affected**: only impacted projects are linted, typechecked, tested, and built. `nrwl/nx-set-shas@v5` chooses comparison SHAs in CI; locally compare against `main`.
 
 ## Simulate CI
 
 ```bash
-npx nx show projects --affected --base=main --head=HEAD        # what's affected
-npx nx show projects --affected --type app --base=main --head=HEAD  # apps only
-npx nx affected -t lint test build --base=main --head=HEAD     # the CI job itself
-npx tsc --noEmit                                               # global typecheck (CI runs it workspace-wide)
+pnpm nx show projects --affected --base=main --head=HEAD
+pnpm nx show projects --affected --type app --base=main --head=HEAD
+pnpm nx affected -t lint typecheck --base=main --head=HEAD
+pnpm nx db:migrate:run api
+pnpm nx affected -t test --parallel=2 --outputStyle=stream --base=main --head=HEAD -- --run
+pnpm nx affected -t build --configuration=production --base=main --head=HEAD
 ```
 
-Prefix nx with `pnpm` (`pnpm nx …`) to use the workspace CLI. Details of each pipeline stage: [references/ci-pipeline.md](references/ci-pipeline.md).
+CI also runs `pnpm nx db:generate api` and rejects tracked or untracked changes under `apps/api/drizzle/`. Details: [references/ci-pipeline.md](references/ci-pipeline.md).
 
 ## Interpreting deploy gating
 
 | Affected app | On push to main |
 | --- | --- |
 | `notes` | `deploy-frontend` runs (Vercel prebuilt) |
-| `api` | `deploy` runs (`railway up`) |
+| `backoffice` | `deploy-backoffice` runs against its separate Vercel project |
+| `api` | `deploy` runs through `.github/scripts/railway-deploy.sh` |
 | `mcp` | `deploy-mcp` runs if `RAILWAY_MCP_SERVICE_ID` is set |
 
 "CI didn't deploy X" usually means X wasn't affected by the diff — verify with the `--type app` command above.

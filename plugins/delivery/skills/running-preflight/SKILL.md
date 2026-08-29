@@ -1,6 +1,6 @@
 ---
 name: running-preflight
-description: Runs the full Knowtis pre-push verification — affected lint/test/build, workspace typecheck, and pending-migration detection — and reports a ship/no-ship verdict.
+description: Runs the full Knowtis pre-push verification — affected lint, typecheck, test, production build, and migration-drift detection — and reports a SHIP or NO-SHIP verdict. Invoke explicitly before pushing or opening a PR.
 disable-model-invocation: true
 ---
 
@@ -14,24 +14,26 @@ Run the checks CI will run, locally, and report a verdict. Execute all steps eve
 # 1. What does this change touch?
 pnpm nx show projects --affected --base=main --head=HEAD
 
-# 2. The CI job:
-pnpm nx affected -t lint test build --base=main --head=HEAD
+# 2. Affected lint and typecheck:
+pnpm nx affected -t lint typecheck --base=main --head=HEAD
 
-# 3. Workspace-wide typecheck (CI runs this unscoped):
-npx tsc --noEmit
+# 3. Apply committed migrations to the local test database:
+pnpm nx db:migrate:run api
 
-# 4. Pending migration check — schema changed without a generated migration?
-git diff --name-only main...HEAD -- apps/api/src/database/schema/ | grep -q . \
-  && git diff --name-only main...HEAD -- apps/api/drizzle/ | grep -q . \
-  && echo "schema + migration: OK" \
-  || (git diff --name-only main...HEAD -- apps/api/src/database/schema/ | grep -q . \
-      && echo "WARNING: schema changed but no migration generated — run pnpm db:generate" \
-      || echo "no schema changes")
+# 4. Affected tests with CI's runner limits:
+pnpm nx affected -t test --parallel=2 --outputStyle=stream --base=main --head=HEAD -- --run
+
+# 5. Affected production builds:
+pnpm nx affected -t build --configuration=production --base=main --head=HEAD
+
+# 6. Generate from the current schema and reject tracked or untracked drift:
+pnpm nx db:generate api
+test -z "$(git status --porcelain --untracked-files=all -- apps/api/drizzle/)"
 ```
 
 ## Report format
 
 End with a verdict block:
 
-- **SHIP** — all green; list affected projects and which deploy jobs will fire on merge (notes→Vercel, api/mcp→Railway).
-- **NO-SHIP** — list each failure with the exact failing command and the first relevant error lines, plus the fix order (lint → types → tests → migrations).
+- **SHIP** — all green; list affected projects and deploy jobs (notes/backoffice → Vercel, API/MCP → Railway).
+- **NO-SHIP** — list every failure with the exact command and first relevant error lines, then give the fix order (lint → types → test DB migration → tests → migration drift → build).
