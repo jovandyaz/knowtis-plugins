@@ -24,7 +24,7 @@ pnpm db:migrate:run
 
 ## Production application — hands-off
 
-Railway's pre-deploy command (`railway.toml`) is the ONLY production migrator: `pnpm exec tsx apps/api/src/database/migrate.ts` runs between build and release with the service's own `DATABASE_URL`, takes a Postgres advisory lock (concurrent deploys serialize), and a non-zero exit **aborts the deploy** — the app never boots against an un-migrated schema. CI does not run migrations; neither should you, manually, against prod.
+Railway's pre-deploy command (`railway.toml`) is the only production migrator: `pnpm exec tsx apps/api/src/database/migrate.ts` runs between build and release with the service's own `DATABASE_URL`, takes a Postgres advisory lock, and aborts the deploy on failure. CI applies committed migrations only to its disposable test database; never migrate production manually.
 
 ## Zero-downtime changes
 

@@ -6,17 +6,16 @@ Canonical sources: `CLAUDE.md` and `docs/ARCHITECTURE.md` in the knowtis repo.
 
 ```
 apps/
-├── api/     NestJS 11 backend — modules: admin, agent (copilot), ai (single-shot),
-│            artifacts, auth, authorization, collaboration, feature-flags, health,
-│            mcp, notes, observability, users, websocket
-├── mcp/     Standalone MCP server (Hono) for AI assistants
-└── notes/   React 19 frontend (Vite, TanStack Router)
+├── api/         NestJS 11 backend
+├── backoffice/  React 19 admin frontend
+├── mcp/         Standalone MCP server (Hono) for AI assistants
+└── notes/       React 19 notes frontend
 
 libs/        App-specific libraries
 ├── api-client/      HTTP/WebSocket client for the frontend (type:data-access)
 ├── authorization/   CASL permission definitions shared FE/BE
 └── data-access/     React Query hooks + Zod schemas per domain
-    (artifacts, feature-flags, mcp-keys, notes, users)
+    (admin, artifacts, feature-flags, mcp-keys, notes, oauth, users)
 
 packages/    Framework-light, reusable
 ├── ai-gateway/      Framework-free AI gateway core — ZERO workspace deps (extractable)

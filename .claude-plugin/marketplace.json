@@ -4,7 +4,7 @@
   "owner": { "name": "jovandyaz", "email": "jovannotty@gmail.com" },
   "metadata": {
     "description": "Internal Claude Code plugins for the Knowtis platform",
-    "version": "0.1.1"
+    "version": "0.3.0"
   },
   "plugins": [
     {
@@ -24,9 +24,9 @@
     {
       "name": "delivery",
       "source": "./plugins/delivery",
-      "description": "nx affected CI simulation, Graphite stacked PRs, Vercel/Railway deploy runbooks.",
+      "description": "Nx-affected CI simulation, GitHub-native stacked PRs, Vercel/Railway deploy runbooks.",
       "category": "deployment",
-      "keywords": ["nx", "graphite", "vercel", "railway"]
+      "keywords": ["nx", "gh-stack", "vercel", "railway"]
     },
     {
       "name": "domain",

@@ -4,6 +4,12 @@ All notable changes to the `db-ops` plugin.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.2] - 2026-08-29
+
+### Added
+
+- Added migration workflow eval cases covering generation, production safety, and zero-downtime changes.
+
 ## [0.1.1] - 2026-07-02
 
 ### Changed

@@ -1,17 +1,25 @@
 # knowtis-plugins
 
-Internal Claude Code plugin marketplace for the [Knowtis](https://github.com/jovandyaz/knowtis-app) platform.
+Internal agent-skill distribution for the [Knowtis](https://github.com/jovandyaz/knowtis) platform.
 
 ## Install
 
-Add the marketplace and install the plugins once (user scope) — same flow as any public Claude Code marketplace. They then load in every repo; skills only activate when their description matches the task, so they don't get in the way elsewhere.
+Knowtis skills are project-scoped. The Knowtis repository declares this marketplace and enables its Claude Code plugins in `.claude/settings.json`. Contributors install or update those project-scoped plugins with `pnpm setup:agents`; no user-global activation is required.
 
-```
-/plugin marketplace add jovandyaz/knowtis-plugins
-/plugin install domain@knowtis-plugins
-/plugin install db-ops@knowtis-plugins
-/plugin install delivery@knowtis-plugins
-/plugin install standards@knowtis-plugins
+```json
+{
+  "extraKnownMarketplaces": {
+    "knowtis-plugins": {
+      "source": { "source": "github", "repo": "jovandyaz/knowtis-plugins" }
+    }
+  },
+  "enabledPlugins": {
+    "domain@knowtis-plugins": true,
+    "db-ops@knowtis-plugins": true,
+    "delivery@knowtis-plugins": true,
+    "standards@knowtis-plugins": true
+  }
+}
 ```
 
 ## Plugins
@@ -20,29 +28,29 @@ Add the marketplace and install the plugins once (user scope) — same flow as a
 | --- | --- | --- |
 | [`standards`](plugins/standards/) | development | Skills for TypeScript/testing conventions, the minimal-comments policy, and single-line Conventional Commits. |
 | [`db-ops`](plugins/db-ops/) | database | Drizzle migration discipline (`generate` → commit → `migrate`, never `push` on shared DBs) and a read-only Postgres investigation contract. |
-| [`delivery`](plugins/delivery/) | deployment | nx affected CI simulation, Graphite stacked-PR workflow, Vercel/Railway deploy runbooks, and a manual `/delivery:running-preflight` check. |
+| [`delivery`](plugins/delivery/) | deployment | Nx-affected CI simulation, GitHub-native stacked PRs, Vercel/Railway deploy runbooks, and a manual `/delivery:running-preflight` check. |
 | [`domain`](plugins/domain/) | development | The project's tribal knowledge: architecture orientation, copilot/AI-gateway safety invariants, realtime-collaboration (Yjs/Hocuspocus) rules, and the read-only `knowtis-architect` agent. |
 
 Each plugin is versioned in its `.claude-plugin/plugin.json` with a matching `CHANGELOG.md`.
 
 ## Other agents (Codex, OpenCode, Cursor, Gemini)
 
-Codex, Cursor, Gemini CLI, and OpenCode don't use Claude Code plugins, but they read the open [Agent Skills](https://agentskills.io) `SKILL.md` format from `.agents/skills/`. Install these skills once, globally — the same once-and-done idea as the Claude Code install above:
+Codex, Cursor, Gemini CLI, and OpenCode don't consume Claude Code plugins. Vendor the same open [Agent Skills](https://agentskills.io) content into the Knowtis repository instead:
 
 ```bash
-node scripts/sync-agents.mjs --install-global    # -> ~/.agents/skills (all four tools, every repo)
+node scripts/sync-agents.mjs --install-repo ../knowtis
 ```
 
-Re-running is idempotent (it tracks what it owns via a manifest and prunes stale skills; other tools' skills are never touched). Other modes if you need them: `--install-repo <repo>` vendors the skills into one repo's `.agents/skills` and adds an OpenCode agent; `--check <repo>` reports drift; no flag emits to `dist/` for preview.
+Re-running is idempotent: the ownership manifest prevents overwriting unrelated skills, records content hashes, and prunes stale names. `--check <repo>` verifies skills plus the generated OpenCode agent; no flag emits a preview to `dist/`. Use `--uninstall-global` once when migrating an older user-global installation.
 
 | Tool | Reads skills from |
 | --- | --- |
-| Codex CLI | `~/.agents/skills` (or `.agents/skills/` per project) |
-| Cursor | `~/.agents/skills` · `.cursor/skills/` |
-| Gemini CLI | `~/.agents/skills` (alias of `~/.gemini/skills/`) |
-| OpenCode | `~/.agents/skills` (also reads `.claude/skills/`) |
+| Codex CLI | `.agents/skills/` |
+| Cursor | `.agents/skills/` |
+| Gemini CLI | `.agents/skills/` |
+| OpenCode | `.agents/skills/` |
 
-**Degradation outside Claude Code**: the marketplace/plugin manifests are Claude Code-only; `allowed-tools` is ignored by OpenCode; `disable-model-invocation` (used by delivery's `running-preflight`) is honored only by Claude Code and Cursor — in other tools that skill is model-invocable.
+**Degradation outside Claude Code**: plugin manifests are Claude Code-only. The portable sync strips Claude-only frontmatter such as `disable-model-invocation`, so non-Claude tools can invoke `running-preflight` automatically.
 
 ## Prerequisites
 
@@ -58,6 +66,8 @@ Plugins never bundle credentials or connection strings. `db-ops` expects either 
    claude plugin validate .
    for p in plugins/*/; do claude plugin validate "$p" --strict; done
    node scripts/validate-plugins.mjs
+   node scripts/sync-agents.mjs
+   node scripts/sync-agents.mjs --check dist
    ```
 
 4. Any change under `plugins/<name>/` requires a strictly-greater version bump in its `plugin.json` **and** a `CHANGELOG.md` entry — CI enforces both.
