@@ -14,6 +14,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added eval cases for deploy and preflight behavior.
 - Aligned API/MCP healthchecks, local test migrations, migration-drift detection, and non-interactive `gh stack` commands with production behavior.
 
+## [0.2.0] - 2026-08-28
+
+### Changed
+
+- `stacking-prs` rewritten for GitHub-native stacked PRs (`gh-stack`); Graphite retired. Adds the CodeRabbit 100-file cap, the manual-trigger routine, and the base-branch-deletion / `gh pr edit` gotchas.
+
 ## [0.1.2] - 2026-07-02
 
 ### Changed
