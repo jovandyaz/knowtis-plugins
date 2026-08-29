@@ -41,7 +41,7 @@ Codex, Cursor, Gemini CLI, and OpenCode don't consume Claude Code plugins. Vendo
 node scripts/sync-agents.mjs --install-repo ../knowtis
 ```
 
-Re-running is idempotent: the ownership manifest prevents overwriting unrelated skills, records content hashes, and prunes stale names. `--check <repo>` verifies skills plus the generated OpenCode agent; no flag emits a preview to `dist/`. Use `--uninstall-global` once when migrating an older user-global installation.
+Re-running is idempotent: the ownership manifest prevents overwriting unrelated skills, records the source revision and content hashes, and prunes stale names. `--check <repo>` verifies skills plus the generated OpenCode agent; no flag emits a preview to `dist/`. Use `--uninstall-global` once when migrating an older user-global installation.
 
 | Tool | Reads skills from |
 | --- | --- |

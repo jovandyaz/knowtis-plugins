@@ -48,6 +48,7 @@ test("installs portable skills and detects content drift", (t) => {
     ),
   );
   assert.match(manifest.deploying.integrity, /^sha256-[a-f0-9]{64}$/);
+  assert.match(manifest.deploying.revision, /^[a-f0-9]{40}$/);
   assert.ok(
     existsSync(
       join(repo, ".opencode", "agents", ".knowtis-plugins-manifest.json"),

@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - Added migration workflow eval cases covering generation, production safety, and zero-downtime changes.
+- Enforced database-level read-only investigations and schema verification before baselining.
 
 ## [0.1.1] - 2026-07-02
 

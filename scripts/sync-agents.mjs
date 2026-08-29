@@ -20,6 +20,7 @@ import {
   existsSync,
   lstatSync,
 } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { homedir } from "node:os";
@@ -35,6 +36,10 @@ const ARCHITECT_SRC = join(
 );
 const MANIFEST_NAME = ".knowtis-plugins-manifest.json";
 const ARCHITECT_NAME = "knowtis-architect.md";
+const SOURCE_REVISION = execFileSync("git", ["rev-parse", "HEAD"], {
+  cwd: ROOT,
+  encoding: "utf8",
+}).trim();
 
 function collectSkills() {
   const skills = new Map();
@@ -188,6 +193,7 @@ function skillIntegrity(dir, portableSource = false) {
 function manifestEntry(src, plugin, version) {
   return {
     source: `${plugin}@${version}`,
+    revision: SOURCE_REVISION,
     integrity: skillIntegrity(src, true),
   };
 }
