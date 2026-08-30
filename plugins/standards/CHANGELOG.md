@@ -4,6 +4,13 @@ All notable changes to the `standards` plugin.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.2] - 2026-08-30
+
+### Changed
+
+- License the plugin and its portable skills under MIT.
+- Align minimal-comments and database-test guidance with current Knowtis enforcement.
+
 ## [0.2.1] - 2026-08-14
 
 ### Changed

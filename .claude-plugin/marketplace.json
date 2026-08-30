@@ -3,16 +3,16 @@
   "name": "knowtis-plugins",
   "owner": { "name": "jovandyaz", "email": "jovannotty@gmail.com" },
   "metadata": {
-    "description": "Internal Claude Code plugins for the Knowtis platform",
-    "version": "0.3.0"
+    "description": "Claude Code plugins and Agent Skills for the Knowtis platform",
+    "version": "0.3.1"
   },
   "plugins": [
     {
       "name": "standards",
       "source": "./plugins/standards",
-      "description": "Engineering standards: minimal-comments hook, TypeScript/testing conventions, Conventional Commits.",
+      "description": "Engineering standards: TypeScript/testing conventions, ESLint-backed minimal-comments policy, Conventional Commits.",
       "category": "development",
-      "keywords": ["conventions", "hooks", "code-review"]
+      "keywords": ["conventions", "typescript", "code-review"]
     },
     {
       "name": "db-ops",

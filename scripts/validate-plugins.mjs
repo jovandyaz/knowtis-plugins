@@ -114,6 +114,9 @@ function checkSkill(path) {
       `${rel}: description must contain 1-1024 characters on its declaration line`,
     );
   }
+  if (!/^license:\s*MIT$/m.test(fm)) {
+    fail(`${rel}: frontmatter license must be MIT`);
+  }
   if (text.split("\n").length > 500) fail(`${rel}: SKILL.md exceeds 500 lines`);
 
   for (const match of text.matchAll(
@@ -234,6 +237,10 @@ if (marketplace) {
 
 for (const name of existsSync(PLUGINS_DIR) ? readdirSync(PLUGINS_DIR) : []) {
   const dir = join(PLUGINS_DIR, name);
+  if (lstatSync(dir).isSymbolicLink()) {
+    fail(`plugins/${name}: top-level plugin directory must not be a symlink`);
+    continue;
+  }
   if (!lstatSync(dir).isDirectory()) continue;
   if (!registered.has(name))
     fail(`plugins/${name}: not registered in marketplace.json`);
@@ -259,6 +266,9 @@ for (const name of existsSync(PLUGINS_DIR) ? readdirSync(PLUGINS_DIR) : []) {
     for (const field of ["description", "author", "license"]) {
       if (!manifest[field])
         fail(`plugins/${name}: plugin.json missing ${field}`);
+    }
+    if (manifest.license !== "MIT") {
+      fail(`plugins/${name}: plugin.json license must be MIT`);
     }
     if (manifest.category) {
       fail(
