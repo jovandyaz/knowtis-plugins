@@ -439,7 +439,8 @@ test("recovers interrupted skill and agent swaps before reinstalling", (t) => {
 
 test("recovers an interrupted global install before uninstalling", (t) => {
   const home = tempRepo(t);
-  assert.equal(runWithEnv({ HOME: home }, "--install-global").status, 0);
+  const homeEnv = { HOME: home, USERPROFILE: home };
+  assert.equal(runWithEnv(homeEnv, "--install-global").status, 0);
   const skills = join(home, ".agents", "skills");
   const stageName = ".knowtis-plugins-stage-uninstall";
   const stage = join(skills, stageName);
@@ -456,7 +457,7 @@ test("recovers an interrupted global install before uninstalling", (t) => {
     }),
   );
 
-  const uninstall = runWithEnv({ HOME: home }, "--uninstall-global");
+  const uninstall = runWithEnv(homeEnv, "--uninstall-global");
   assert.equal(uninstall.status, 0, uninstall.stderr);
   assert.equal(existsSync(join(skills, "deploying")), false);
   assert.equal(
