@@ -107,8 +107,8 @@
       "files": [],
       "expected_behavior": [
         "Does not report SKIPPED as a successful deployment",
-        "Reports the exact deployment state and verifies what is currently live",
-        "Does not guess that watchPatterns suppressed railway up",
+        "Checks watchPatterns against the Nx affected set and changed snapshot",
+        "Calls out package-only API dependencies because the current patterns omit packages",
         "Requires resolving the unexpected state before claiming the API is live"
       ]
     },
@@ -129,9 +129,10 @@
       "files": [],
       "expected_behavior": [
         "Requires explicit emergency intent before bypassing CI",
-        "Prefers the repository gated deploy script or attached railway up",
-        "Polls a detached deployment ID to SUCCESS when detached mode is used",
-        "Verifies the API health endpoint before reporting the service live"
+        "Prefers the repository gated deploy script or railway up --detach --json",
+        "Polls the exact returned deployment ID to SUCCESS",
+        "Does not treat a healthy endpoint as proof that the new deployment is live",
+        "Verifies the API health endpoint after deployment success"
       ]
     },
     {

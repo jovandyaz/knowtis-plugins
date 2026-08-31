@@ -30,5 +30,5 @@ Canonical sources: `.github/workflows/ci.yml` and the CI/CD section of `CLAUDE.m
 ## Key facts
 
 - Vercel Git integration is off; pushes never trigger Vercel directly.
-- Railway's current CLI contract says `railway up` always uploads and builds the supplied code. If a deployment record reports `SKIPPED`, report that exact state and investigate it; do not claim a successful deploy or assume `watchPatterns` caused it.
+- `railway up` uploads the snapshot, but Railway can skip the build when `watchPatterns` match no changed files. Explicit `railway up --ci` exits 0 on that message and detached mode records `SKIPPED`; compare either result with Nx's affected set before deciding nothing needed deployment. Agent automation must verify the exact deployment ID because non-TTY invocations can return before terminal status.
 - CI applies migrations only to its disposable test database. Railway's pre-deploy command is the only production migrator.

@@ -21,11 +21,11 @@ push to main → affected lint/typecheck/test/build + migration drift check
 ## The facts that resolve most deploy confusion
 
 1. **Vercel never deploys directly from a push** — Git deployments are disabled. Check the affected app and its corresponding `deploy-frontend` or `deploy-backoffice` job.
-2. **`railway up` uploads and builds the supplied code.** Railway's current CLI contract does not use `watchPatterns` to suppress that upload. If a deployment record nevertheless reports `SKIPPED`, report it as “not deployed” and investigate the exact deployment instead of claiming success or guessing a watch-pattern cause.
+2. **`railway up` uploads the snapshot, then Railway can skip its build via `watchPatterns`.** Explicit `railway up --ci` exits 0 when build logs say “No changed files matched patterns”; a detached deployment may later become `SKIPPED`, observable by polling its exact ID. Compare that state with the Nx affected set and never report it as a successful deployment. The API patterns currently omit `packages/**`, so package-only transitive changes require particular scrutiny.
 3. **Production migrations run in Railway's release phase.** CI applies migrations only to its test database and separately checks generated migration drift.
-4. **Detached and CI/build-only Railway commands are not completion evidence.** An attached `railway up` exit 0 means `SUCCESS` under the current CLI contract; `--detach` only queues work and `--ci` streams build logs, so those modes require terminal-state verification.
+4. **CLI return is not sufficient evidence in agent automation.** A non-TTY invocation can return after upload, explicit `--ci` has a watch-pattern early-success path, and `--detach` only queues work. Use `railway up --detach --json`, capture that exact deployment ID, and poll it to `SUCCESS`; a healthy endpoint alone may still be the previous deployment.
 5. **Healthcheck gates differ by service**: API uses `/api/v1/health/ping` with 120 seconds; MCP uses `/health` with 60 seconds. Check the matching service configuration when a build succeeds but never becomes live.
-6. **Manual escape hatch**: direct Railway deploys bypass CI and are for explicit emergencies only. Prefer the repository's gated deploy script; otherwise use attached `railway up` and verify the service health endpoint, or poll the detached deployment ID to `SUCCESS` before reporting completion.
+6. **Manual escape hatch**: direct Railway deploys bypass CI and are for explicit emergencies only. Prefer the repository's gated deploy script; otherwise use `railway up --detach --json`, poll the returned deployment ID to `SUCCESS`, then verify the service health endpoint before reporting completion.
 
 ## Local CI and readiness
 
