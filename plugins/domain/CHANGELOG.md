@@ -4,6 +4,14 @@ All notable changes to the `domain` plugin.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] - 2026-08-30
+
+### Changed
+
+- Expand `wiring-realtime-collaboration` triggers around duplicated, missing, stale, or overwritten note content; guest/share-link editing; and REST/MCP-to-Yjs synchronization.
+- Add diagnostic guidance and eval contracts for multiple content writers, StrictMode reproduction, and guest edit authorization.
+- Align orientation guidance with Railway's current `railway up` contract.
+
 ## [0.2.1] - 2026-08-30
 
 ### Changed

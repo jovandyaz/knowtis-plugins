@@ -1,12 +1,10 @@
 # delivery
 
-How Knowtis code ships: CI simulation, PR stacking, and deploy runbooks.
+How Knowtis code is verified and shipped: CI readiness, PR stacking, and deploy diagnosis.
 
 ## Components
 
 | Component | Type | Purpose |
 | --- | --- | --- |
-| `running-affected-ci` | Skill | Simulate the nx-affected pipeline locally; interpret which checks and deploy jobs a change triggers. |
 | `stacking-prs` | Skill | GitHub-native `gh-stack` workflow, CodeRabbit-first review, branch conventions. |
-| `deploying` | Skill | CI-driven Vercel/Railway deploy mechanics, env vars, health checks, troubleshooting. |
-| `running-preflight` | Skill (manual-only) | `/delivery:running-preflight` — full local verification with a SHIP/NO-SHIP verdict. Not model-invocable: it runs the whole test suite, so it fires only when you ask. |
+| `deploying` | Skill | Nx-affected CI simulation, complete readiness checks, CI-driven Vercel/Railway deploy mechanics, health checks, and troubleshooting. |

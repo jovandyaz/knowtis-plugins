@@ -20,8 +20,7 @@ Knowtis skills are project-scoped. The Knowtis repository declares this marketpl
   "enabledPlugins": {
     "domain@knowtis-plugins": true,
     "db-ops@knowtis-plugins": true,
-    "delivery@knowtis-plugins": true,
-    "standards@knowtis-plugins": true
+    "delivery@knowtis-plugins": true
   }
 }
 ```
@@ -30,9 +29,8 @@ Knowtis skills are project-scoped. The Knowtis repository declares this marketpl
 
 | Plugin | Category | What it provides |
 | --- | --- | --- |
-| [`standards`](plugins/standards/) | development | Skills for TypeScript/testing conventions, the ESLint-backed minimal-comments policy, and single-line Conventional Commits. |
 | [`db-ops`](plugins/db-ops/) | database | Drizzle migration discipline (`generate` → commit → `migrate`, never `push` on shared DBs) and a read-only Postgres investigation contract. |
-| [`delivery`](plugins/delivery/) | deployment | Nx-affected CI simulation, GitHub-native stacked PRs, Vercel/Railway deploy runbooks, and a manual `/delivery:running-preflight` check. |
+| [`delivery`](plugins/delivery/) | deployment | CI readiness and Nx-affected diagnosis, GitHub-native stacked PRs, and CI-driven Vercel/Railway deploy troubleshooting. |
 | [`domain`](plugins/domain/) | development | The project's tribal knowledge: architecture orientation, copilot/AI-gateway safety invariants, realtime-collaboration (Yjs/Hocuspocus) rules, and the read-only `knowtis-architect` agent. |
 
 Each plugin is versioned in its `.claude-plugin/plugin.json` with a matching `CHANGELOG.md`.
@@ -53,8 +51,6 @@ Re-running is idempotent: the tamper-evident ownership manifest refuses locally 
 | Cursor | `.agents/skills/` |
 | Gemini CLI | `.agents/skills/` |
 | OpenCode | `.agents/skills/` |
-
-**Degradation outside Claude Code**: plugin manifests are Claude Code-only. The portable sync strips Claude-only frontmatter such as `disable-model-invocation`, so non-Claude tools can invoke `running-preflight` automatically.
 
 ## Prerequisites
 

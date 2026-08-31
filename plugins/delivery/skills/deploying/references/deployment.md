@@ -24,7 +24,7 @@ restartPolicyMaxRetries = 3
 
 - `NODE_ENV=development` in the build so build-only devDependencies (nx, tsx) install.
 - Pre-deploy = the only production migrator (advisory-locked, abort-on-failure). CI migrates only its test database.
-- CI deploys through `.github/scripts/railway-deploy.sh`, which waits for `SUCCESS` or `SKIPPED` and fails on terminal errors, disappearance, or timeout.
+- CI deploys through `.github/scripts/railway-deploy.sh`, which waits for `SUCCESS` or `SKIPPED` and fails on terminal errors, disappearance, or timeout. `SKIPPED` means the new deployment did not become live; report and investigate that state rather than describing it as deployment success.
 
 ## Railway MCP (`apps/mcp/railway.toml`)
 
