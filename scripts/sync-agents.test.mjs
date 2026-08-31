@@ -72,18 +72,21 @@ test("installs portable skills and detects content drift", (t) => {
   assert.equal(run("--install-repo", repo).status, 0);
   assert.equal(run("--check", repo).status, 0);
 
-  const preflight = readFileSync(
-    join(repo, ".agents", "skills", "running-preflight", "SKILL.md"),
-    "utf8",
-  );
-  assert.doesNotMatch(preflight, /^disable-model-invocation:/m);
-
   const manifest = JSON.parse(
     readFileSync(
       join(repo, ".agents", "skills", ".knowtis-plugins-manifest.json"),
       "utf8",
     ),
   );
+  assert.deepEqual(Object.keys(manifest).sort(), [
+    "building-copilot-features",
+    "deploying",
+    "investigating-postgres",
+    "managing-drizzle-migrations",
+    "orienting",
+    "stacking-prs",
+    "wiring-realtime-collaboration",
+  ]);
   assert.match(manifest.deploying.integrity, /^sha256-[a-f0-9]{64}$/);
   assert.match(manifest.deploying.revision, /^[a-f0-9]{40}(?:-dirty)?$/);
   assert.match(
@@ -104,7 +107,7 @@ test("installs portable skills and detects content drift", (t) => {
   );
 
   for (const path of [
-    join(repo, ".agents", "skills", "running-preflight", "SKILL.md"),
+    join(repo, ".agents", "skills", "deploying", "SKILL.md"),
     join(repo, ".opencode", "agents", "knowtis-architect.md"),
     join(repo, ".opencode", "agents", "knowtis-plugins-LICENSE"),
   ]) {

@@ -4,16 +4,9 @@
   "owner": { "name": "jovandyaz", "email": "jovannotty@gmail.com" },
   "metadata": {
     "description": "Claude Code plugins and Agent Skills for the Knowtis platform",
-    "version": "0.3.1"
+    "version": "0.4.0"
   },
   "plugins": [
-    {
-      "name": "standards",
-      "source": "./plugins/standards",
-      "description": "Engineering standards: TypeScript/testing conventions, ESLint-backed minimal-comments policy, Conventional Commits.",
-      "category": "development",
-      "keywords": ["conventions", "typescript", "code-review"]
-    },
     {
       "name": "db-ops",
       "source": "./plugins/db-ops",
@@ -24,7 +17,7 @@
     {
       "name": "delivery",
       "source": "./plugins/delivery",
-      "description": "Nx-affected CI simulation, GitHub-native stacked PRs, Vercel/Railway deploy runbooks.",
+      "description": "Knowtis CI readiness, stacked PRs, and CI-driven Vercel/Railway deployment diagnosis.",
       "category": "deployment",
       "keywords": ["nx", "gh-stack", "vercel", "railway"]
     },

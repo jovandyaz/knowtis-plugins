@@ -4,6 +4,17 @@ All notable changes to the `delivery` plugin.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0] - 2026-08-30
+
+### Changed
+
+- Fold Nx-affected CI simulation and complete preflight behavior into `deploying`, matching the delivery requests observed in Claude Code sessions.
+- Move the CI pipeline reference and preflight eval contracts under `deploying`.
+
+### Removed
+
+- Remove the unused `running-affected-ci` and `running-preflight` skills.
+
 ## [0.3.1] - 2026-08-30
 
 ### Changed
