@@ -4,6 +4,13 @@ All notable changes to the `domain` plugin.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.1] - 2026-08-30
+
+### Changed
+
+- License the plugin and its portable skills under MIT.
+- Synchronize MCP authentication/tooling guidance and canonical documentation references.
+
 ## [0.2.0] - 2026-08-29
 
 ### Changed

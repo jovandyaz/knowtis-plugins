@@ -1,13 +1,13 @@
 {
   "name": "delivery",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Knowtis delivery workflows: Nx-affected CI simulation, GitHub-native stacked PRs with CodeRabbit review, Vercel/Railway deploy runbooks, and a manual preflight check.",
   "author": {
     "name": "jovandyaz",
     "email": "jovannotty@gmail.com",
     "url": "https://github.com/jovandyaz"
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "keywords": [
     "nx",
     "gh-stack",

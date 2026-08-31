@@ -1,13 +1,13 @@
 {
   "name": "standards",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Knowtis engineering standards as model-invoked skills: TypeScript/testing conventions, the minimal-comments policy, and single-line Conventional Commits.",
   "author": {
     "name": "jovandyaz",
     "email": "jovannotty@gmail.com",
     "url": "https://github.com/jovandyaz"
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "keywords": [
     "conventions",
     "code-review",

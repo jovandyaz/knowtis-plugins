@@ -5,29 +5,60 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  portable-windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.20.0
+
+      - name: Test multi-agent sync
+        run: node --test scripts/sync-agents.test.mjs
+
+      - name: Validate and check generated output
+        run: |
+          node scripts/validate-plugins.mjs
+          node scripts/sync-agents.mjs
+          node scripts/sync-agents.mjs --check dist
+
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - uses: actions/setup-node@v5
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
         with:
-          node-version: 22
+          version: 10.15.0
 
-      - name: Install Claude Code CLI
-        run: npm install -g @anthropic-ai/claude-code
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.20.0
 
       - name: Validate marketplace
-        run: claude plugin validate .
+        run: pnpm dlx @anthropic-ai/claude-code@2.1.251 plugin validate .
 
       - name: Validate plugins (strict)
         run: |
           for p in plugins/*/; do
             echo "::group::$p"
-            claude plugin validate "$p" --strict
+            pnpm dlx @anthropic-ai/claude-code@2.1.251 plugin validate "$p" --strict
             echo "::endgroup::"
           done
 

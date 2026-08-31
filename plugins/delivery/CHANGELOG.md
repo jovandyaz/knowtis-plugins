@@ -4,6 +4,12 @@ All notable changes to the `delivery` plugin.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.1] - 2026-08-30
+
+### Changed
+
+- License the plugin and its portable skills under MIT.
+
 ## [0.3.0] - 2026-08-29
 
 ### Changed
