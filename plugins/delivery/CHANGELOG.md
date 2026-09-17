@@ -4,6 +4,18 @@ All notable changes to the `delivery` plugin.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.5.0] - 2026-09-17
+
+### Added
+
+- Require every PR to carry its author as assignee and at least one label, and list the repository's label set.
+
+### Changed
+
+- Widen the `gh pr edit` gotcha: the same deprecated GraphQL field breaks labels and assignees too, so record the REST recipe for each.
+- Record that branch protection needs `gh pr update-branch --rebase`, and that `--auto` merge avoids a second manual pass.
+- Note that `--body`/`--body-file` bypass the pull request template, and name the sections a composed body has to carry.
+
 ## [0.4.0] - 2026-08-30
 
 ### Changed

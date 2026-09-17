@@ -14,15 +14,30 @@ Knowtis uses GitHub's `gh-stack` extension for stacked PRs and CodeRabbit for au
 2. Install the extension once with `gh extension install github/gh-stack` if `gh stack` is unavailable.
 3. Build a tracked stack with `gh stack init <bottom-branch>`, `gh stack add <next-branch>`, and `gh stack submit --auto --open`, or adopt existing PRs with `gh stack link <bottom> … <top>`. `link` takes PRs or branches bottom-first, creates no local tracking, and only adds membership.
 4. Keep every PR under 100 changed files; CodeRabbit refuses larger reviews. Check with `git diff --name-only <base> <head> | wc -l` before opening.
-5. Trigger CodeRabbit with `@coderabbitai full review` and confirm inline comments exist. A green check without comments can mean the review was skipped; fair-usage failures must be retried after the named window.
-6. Address all review feedback before human review.
-7. Merge with an explicit target, for example `gh stack merge <pr-number> --yes`, then run `gh stack sync` locally. Never manually rebase a stacked branch after GitHub merges and retargets a layer.
-8. Detailed context lives in the PR description; commits stay single-line.
+5. Assign and label every PR you open: `gh pr create --assignee @me --label <label>`. The author is always the assignee, so an unassigned PR is an unfinished one.
+6. Trigger CodeRabbit with `@coderabbitai full review` and confirm inline comments exist. A green check without comments can mean the review was skipped; fair-usage failures must be retried after the named window.
+7. Address all review feedback before human review.
+8. Merge with an explicit target, for example `gh stack merge <pr-number> --yes`, then run `gh stack sync` locally. Never manually rebase a stacked branch after GitHub merges and retargets a layer.
+9. Detailed context lives in the PR description; commits stay single-line.
+
+## Labels
+
+Pick every label that matches the change; add a new one rather than forcing a bad fit.
+
+- Domain: `ai`, `notes`, `editor`, `artifacts`, `flashcards`, `ui/ux`, `shared notes`
+- Cross-cutting: `security`, `dependencies`, `tech-debt`, `tooling`, `documentation`, `bug`, `enhancement`
+
+`gh label list` is the current set. Create one with `gh label create <name> --description <text> --color ededed`, the neutral grey the cross-cutting labels use.
 
 ## Gotchas
 
 - `gh stack view` needs local tracking; after `link`, run `gh stack checkout <stack-number>` first.
-- `gh pr edit` is broken on this repo (deprecated GraphQL field). Change bases and bodies with `gh api repos/<owner>/<repo>/pulls/<n> -X PATCH --input -`.
+- `gh pr edit` is broken on this repo — every subcommand fails on `repository.pullRequest.projectCards`, a deprecated Projects-classic GraphQL field, so bodies, bases, labels and assignees all have to go through REST after the fact:
+  - body or base: `gh api repos/<owner>/<repo>/pulls/<n> -X PATCH -f body="$(cat body.md)"`
+  - labels: `gh api -X POST repos/<owner>/<repo>/issues/<n>/labels -f 'labels[]=<label>'`
+  - assignee: `gh api -X POST repos/<owner>/<repo>/issues/<n>/assignees -f 'assignees[]=<user>'`
+- Branch protection requires the head branch to be up to date, and every merge staleness-checks the rest. Refresh with `gh pr update-branch <n> --rebase`, then `gh pr merge <n> --squash --auto` so the merge fires by itself when CI goes green instead of needing another manual pass.
+- `--body-file` and `--body` both bypass `.github/PULL_REQUEST_TEMPLATE.md`. Read that file and compose the body from its sections — `Why`, `What changed`, `Verification`, `Screenshots` for UI, `Risks and limits`, and the checklist — dropping the ones that do not apply. `Verification` carries the commands you ran and what they printed; CI already proves lint, typecheck and tests, so spend it on what CI cannot see.
 - Deleting a branch that is the **base** of an open PR auto-closes that PR, and GitHub then refuses both a base change and a reopen. Run `gh pr list --base <branch>` before deleting anything.
 - Verify `gh auth status` shows the intended account before every write.
 
