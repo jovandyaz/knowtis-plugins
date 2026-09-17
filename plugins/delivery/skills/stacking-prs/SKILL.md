@@ -37,7 +37,7 @@ Pick every label that matches the change; add a new one rather than forcing a ba
   - labels: `gh api -X POST repos/<owner>/<repo>/issues/<n>/labels -f 'labels[]=<label>'`
   - assignee: `gh api -X POST repos/<owner>/<repo>/issues/<n>/assignees -f 'assignees[]=<user>'`
 - Branch protection requires the head branch to be up to date, and every merge staleness-checks the rest. Refresh with `gh pr update-branch <n> --rebase`, then `gh pr merge <n> --squash --auto` so the merge fires by itself when CI goes green instead of needing another manual pass.
-- `--body-file` and `--body` both bypass `.github/PULL_REQUEST_TEMPLATE.md`; write the sections the template asks for into the body yourself.
+- `--body-file` and `--body` both bypass `.github/PULL_REQUEST_TEMPLATE.md`. Read that file and compose the body from its sections — `Why`, `What changed`, `Verification`, `Screenshots` for UI, `Risks and limits`, and the checklist — dropping the ones that do not apply. `Verification` carries the commands you ran and what they printed; CI already proves lint, typecheck and tests, so spend it on what CI cannot see.
 - Deleting a branch that is the **base** of an open PR auto-closes that PR, and GitHub then refuses both a base change and a reopen. Run `gh pr list --base <branch>` before deleting anything.
 - Verify `gh auth status` shows the intended account before every write.
 
