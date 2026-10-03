@@ -25,7 +25,7 @@ When a failure appears only in local development, reproduce against a production
 5. **Hydration uncertainty fails closed.** Returning a blank document after `findById` fails or non-trivial stored HTML/Yjs bytes cannot be decoded lets the next edit overwrite persisted content. Repository errors already normalize to `HANDSHAKE_FAILURE.INTERNAL_ERROR`; malformed non-trivial hydration currently returns a fresh document and is a known bug that must be changed to fail closed.
 6. **The trivial-document guard must fail closed.** The current guard logs “failing open” when its repository lookup fails, then continues to persistence. Treat that as a known bug: skip storage on lookup failure so a transient read error cannot authorize a destructive trivial write.
 7. **Persist HTML and Yjs state together.** Normal storage derives HTML and calls `updateContentWithYjsState`; if HTML conversion fails, fall back to `updateYjsState`. Both return `Result`; log errors rather than throwing from the storage hook.
-8. **One Y.Doc + Awareness instance.** Call parameterless `useYjs()`, then `getYDoc(noteId)` and `getAwareness(noteId)`; pass those exact instances to Hocuspocus. Duplicate instances desync the editor.
+8. **One Y.Doc per note, one fresh Awareness per connection.** Call parameterless `useYjs()` and `getYDoc(noteId)`; pass that Y.Doc to Hocuspocus, but build a new `new Awareness(yDoc)` for each connection. `provider.destroy()` also destroys the Awareness it was given, so a shared or cached one dies on the first teardown (leaving a note, StrictMode's double effect, an account switch) and freezes presence until reload. Duplicate Y.Docs desync the editor.
 
 ## Operational facts
 

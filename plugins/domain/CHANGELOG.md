@@ -4,6 +4,12 @@ All notable changes to the `domain` plugin.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.1] - 2026-10-03
+
+### Changed
+
+- Correct `wiring-realtime-collaboration` presence guidance: each connection owns a fresh Awareness, the local awareness clock is carried across connections, and consumers take the current connection's awareness as an input.
+
 ## [0.3.0] - 2026-08-30
 
 ### Changed
