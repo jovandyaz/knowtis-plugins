@@ -47,6 +47,8 @@ REST/MCP `update-note` mutations emit `NoteUpdatedEvent` (with `updates.content`
 
 ## Frontend
 
-- `useCollaborativeEditor` calls parameterless `useYjs()`, then `getYDoc(noteId)` and `getAwareness(noteId)`. `useHocuspocusCollaboration` must consume those same instances (single source of truth). It returns `{ status, isConnected, isSynced, readOnly }`; current shared-note UI exits editing through `onEditDenied` when the server reports read-only scope.
-- Presence: `useActiveCollaborators(noteId)` reads awareness states; `usePresenceBroadcast(noteId)` maintains the local entry. No manual encode/decode.
+- `useCollaborativeEditor` calls parameterless `useYjs()`, then `getYDoc(noteId)`. `useHocuspocusCollaboration` receives that Y.Doc and returns `{ status, isConnected, isSynced, readOnly, awareness }`; current shared-note UI exits editing through `onEditDenied` when the server reports read-only scope.
+- Presence: each connection owns a fresh `new Awareness(yDoc)` (never shared across providers: `provider.destroy()` runs `awareness.destroy()` on whatever it was given). The hook returns the current connection's `awareness` (`null` without one) and consumers take it as an input: `useActiveCollaborators(awareness)` reads its states, and the `CollaborativeCursors` extension follows it through `setCursorsAwareness(awareness | null)`. No manual encode/decode.
+- Awareness clock: the Y.Doc outlives connections and keeps its `clientID`, but y-protocols `applyAwarenessUpdate` only accepts a higher clock and the server keeps `meta[clientID].clock`. A new Awareness starting at 0 is silently ignored by server and peers, so carry the last local clock across connections (the app keeps it per Y.Doc in a `WeakMap` and seeds the new awareness's `meta`).
+- Presence tests: replay every client socket into ONE shared server awareness; a fresh server awareness per socket hides stale-clock and destroyed-awareness bugs.
 - Cleanup: `provider.destroy()` in effect cleanup; server-side `OnModuleDestroy` detaches the upgrade handler, flushes pending stores, then destroys.
