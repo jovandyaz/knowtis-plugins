@@ -83,9 +83,7 @@ test("installs portable skills and detects content drift", (t) => {
     "deploying",
     "investigating-postgres",
     "managing-drizzle-migrations",
-    "orienting",
     "stacking-prs",
-    "wiring-realtime-collaboration",
   ]);
   assert.match(manifest.deploying.integrity, /^sha256-[a-f0-9]{64}$/);
   assert.match(manifest.deploying.revision, /^[a-f0-9]{40}(?:-dirty)?$/);
@@ -93,26 +91,13 @@ test("installs portable skills and detects content drift", (t) => {
     readFileSync(join(repo, ".agents", "skills", "deploying", "LICENSE"), "utf8"),
     /MIT License/,
   );
-  assert.ok(
-    existsSync(
-      join(repo, ".opencode", "agents", ".knowtis-plugins-manifest.json"),
-    ),
-  );
-  assert.match(
-    readFileSync(
-      join(repo, ".opencode", "agents", "knowtis-plugins-LICENSE"),
-      "utf8",
-    ),
-    /MIT License/,
-  );
+  assert.equal(existsSync(join(repo, ".opencode")), false);
 
-  for (const path of [
-    join(repo, ".agents", "skills", "deploying", "SKILL.md"),
-    join(repo, ".opencode", "agents", "knowtis-architect.md"),
-    join(repo, ".opencode", "agents", "knowtis-plugins-LICENSE"),
-  ]) {
-    writeFileSync(path, readFileSync(path, "utf8").replaceAll("\n", "\r\n"));
-  }
+  const skillPath = join(repo, ".agents", "skills", "deploying", "SKILL.md");
+  writeFileSync(
+    skillPath,
+    readFileSync(skillPath, "utf8").replaceAll("\n", "\r\n"),
+  );
   assert.equal(run("--check", repo).status, 0);
 
   appendFileSync(
@@ -140,18 +125,6 @@ test("refuses to overwrite an unrelated skill before installing anything", (t) =
     ),
     false,
   );
-});
-
-test("refuses to overwrite an unrelated OpenCode agent before installing skills", (t) => {
-  const repo = tempRepo(t);
-  const agents = join(repo, ".opencode", "agents");
-  mkdirSync(agents, { recursive: true });
-  writeFileSync(join(agents, "knowtis-architect.md"), "unrelated\n");
-
-  const install = run("--install-repo", repo);
-  assert.equal(install.status, 1);
-  assert.match(install.stderr, /is not owned by knowtis-plugins/);
-  assert.equal(existsSync(join(repo, ".agents", "skills")), false);
 });
 
 test("rejects unsafe manifest keys without deleting outside the skills directory", (t) => {
@@ -245,57 +218,6 @@ test("rejects malformed and symlinked ownership manifests", (t) => {
   assert.match(install.stderr, /ownership manifest must not be a symlink/);
 });
 
-test("upgrades a legacy owned agent and protects current owned content", (t) => {
-  const repo = tempRepo(t);
-  assert.equal(run("--install-repo", repo).status, 0);
-  const agents = join(repo, ".opencode", "agents");
-  const agent = join(agents, "knowtis-architect.md");
-  const agentLicense = join(agents, "knowtis-plugins-LICENSE");
-  const manifest = join(agents, ".knowtis-plugins-manifest.json");
-  const legacyAgent = readFileSync(agent, "utf8").replace(
-    "and verify the answer against the current code.",
-    "and the code itself. Treat `docs/superpowers/specs/` as historical rationale only.",
-  );
-  assert.equal(
-    createHash("sha256").update(legacyAgent).digest("hex"),
-    "ee77a45dd61faa8026e9def002ca73203608c073769eb01726134292d6d6b67b",
-  );
-  writeFileSync(agent, legacyAgent.replaceAll("\n", "\r\n"));
-  rmSync(agentLicense);
-  writeFileSync(
-    manifest,
-    JSON.stringify({ "knowtis-architect.md": "domain@0.2.0" }),
-  );
-
-  assert.equal(run("--install-repo", repo).status, 0);
-  const upgraded = JSON.parse(readFileSync(manifest, "utf8"));
-  assert.match(
-    upgraded["knowtis-architect.md"].integrity,
-    /^sha256-[a-f0-9]{64}$/,
-  );
-
-  const originalAgent = legacyAgent.replace(
-    "`orienting` — repo layout",
-    "`orienting-in-knowtis` — repo layout",
-  );
-  assert.equal(
-    createHash("sha256").update(originalAgent).digest("hex"),
-    "6540a83a386739bc8d06cf82ee42bf8cedb133b5e05c645a11f794004131055a",
-  );
-  writeFileSync(agent, originalAgent);
-  rmSync(agentLicense);
-  writeFileSync(
-    manifest,
-    JSON.stringify({ "knowtis-architect.md": "domain@0.1.0" }),
-  );
-  assert.equal(run("--install-repo", repo).status, 0);
-
-  appendFileSync(agent, "local change\n");
-  const reinstall = run("--install-repo", repo);
-  assert.equal(reinstall.status, 1);
-  assert.match(reinstall.stderr, /modified after installation/);
-});
-
 test("rejects symlinked installation roots before writing outside the repository", (t) => {
   const repo = tempRepo(t);
   const external = tempRepo(t);
@@ -305,14 +227,6 @@ test("rejects symlinked installation roots before writing outside the repository
   assert.equal(install.status, 1);
   assert.match(install.stderr, /refusing to install through it/);
   assert.equal(existsSync(join(external, "skills")), false);
-
-  const agentRepo = tempRepo(t);
-  const agentExternal = tempRepo(t);
-  symlinkSync(agentExternal, join(agentRepo, ".opencode"));
-  const agentInstall = run("--install-repo", agentRepo);
-  assert.equal(agentInstall.status, 1);
-  assert.match(agentInstall.stderr, /refusing to install through it/);
-  assert.equal(existsSync(join(agentExternal, "agents")), false);
 });
 
 test("rejects source symlinks before copying portable skills", (t) => {
@@ -323,7 +237,7 @@ test("rejects source symlinks before copying portable skills", (t) => {
     "plugins",
     "domain",
     "skills",
-    "orienting",
+    "building-copilot-features",
     "unsafe-test-link",
   );
   writeFileSync(external, "keep\n");
@@ -334,7 +248,10 @@ test("rejects source symlinks before copying portable skills", (t) => {
   assert.equal(install.status, 1);
   assert.match(install.stderr, /refusing to follow it/);
   assert.equal(readFileSync(external, "utf8"), "keep\n");
-  assert.equal(existsSync(join(repo, ".agents", "skills", "orienting")), false);
+  assert.equal(
+    existsSync(join(repo, ".agents", "skills", "building-copilot-features")),
+    false,
+  );
 });
 
 test("rejects a symlinked plugin directory and emission target", (t) => {
@@ -360,7 +277,7 @@ test("rejects a symlinked plugin directory and emission target", (t) => {
   assert.equal(readFileSync(join(externalOutput, "sentinel"), "utf8"), "keep\n");
 });
 
-test("recovers interrupted skill and agent swaps before reinstalling", (t) => {
+test("recovers interrupted skill swaps before reinstalling", (t) => {
   const repo = tempRepo(t);
   assert.equal(run("--install-repo", repo).status, 0);
 
@@ -383,36 +300,12 @@ test("recovers interrupted skill and agent swaps before reinstalling", (t) => {
     }),
   );
 
-  const agents = join(repo, ".opencode", "agents");
-  const agentStageName = ".knowtis-agent-stage-test123";
-  const agentStage = join(agents, agentStageName);
-  const agent = join(agents, "knowtis-architect.md");
-  mkdirSync(agentStage);
-  renameSync(agent, join(agentStage, "agent.backup"));
-  writeFileSync(agent, "interrupted\n");
-  writeFileSync(
-    join(agents, ".knowtis-agent-transaction.json"),
-    JSON.stringify({
-      version: 1,
-      stage: agentStageName,
-      hadAgent: true,
-      hadLicense: true,
-      hadManifest: true,
-      committed: false,
-    }),
-  );
-
   const reinstall = run("--install-repo", repo);
   assert.equal(reinstall.status, 0, reinstall.stderr);
   assert.equal(run("--check", repo).status, 0);
   assert.equal(existsSync(skillStage), false);
-  assert.equal(existsSync(agentStage), false);
   assert.equal(
     existsSync(join(skills, ".knowtis-skills-transaction.json")),
-    false,
-  );
-  assert.equal(
-    existsSync(join(agents, ".knowtis-agent-transaction.json")),
     false,
   );
 
@@ -423,17 +316,6 @@ test("recovers interrupted skill and agent swaps before reinstalling", (t) => {
       stage: ".knowtis-plugins-stage-removed",
       hadManifest: true,
       swaps: [],
-      committed: true,
-    }),
-  );
-  writeFileSync(
-    join(agents, ".knowtis-agent-transaction.json"),
-    JSON.stringify({
-      version: 1,
-      stage: ".knowtis-agent-stage-removed",
-      hadAgent: true,
-      hadLicense: true,
-      hadManifest: true,
       committed: true,
     }),
   );
