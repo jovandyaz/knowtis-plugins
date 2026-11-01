@@ -19,8 +19,7 @@ Knowtis skills are project-scoped. The Knowtis repository declares this marketpl
   },
   "enabledPlugins": {
     "domain@knowtis-plugins": true,
-    "db-ops@knowtis-plugins": true,
-    "delivery@knowtis-plugins": true
+    "db-ops@knowtis-plugins": true
   }
 }
 ```
@@ -30,7 +29,6 @@ Knowtis skills are project-scoped. The Knowtis repository declares this marketpl
 | Plugin | Category | What it provides |
 | --- | --- | --- |
 | [`db-ops`](plugins/db-ops/) | database | Drizzle migration discipline (`generate` → commit → `migrate`, never `push` on shared DBs) and a read-only Postgres investigation contract. |
-| [`delivery`](plugins/delivery/) | deployment | GitHub-native stacked PRs, and manual CI readiness and CI-driven Vercel/Railway deploy troubleshooting. |
 | [`domain`](plugins/domain/) | development | Copilot/AI-gateway safety invariants. |
 
 Each plugin is versioned in its `.claude-plugin/plugin.json` with a matching `CHANGELOG.md`.

@@ -185,14 +185,8 @@ function portableContent(path, content) {
   return Buffer.from(content.toString().replaceAll("\r\n", "\n"));
 }
 
-function portableSkillText(text) {
-  return text.replace(/^disable-model-invocation:.*\n/m, "");
-}
-
 function copyPortableSkill(src, dest) {
   cpSync(src, dest, { recursive: true });
-  const skillPath = join(dest, "SKILL.md");
-  writeFileSync(skillPath, portableSkillText(readFileSync(skillPath, "utf8")));
   writeFileSync(join(dest, "LICENSE"), readSourceFile(join(ROOT, "LICENSE")));
 }
 
@@ -203,7 +197,6 @@ function portableFiles(dir) {
       return [path, portableContent(path, readFileSync(file))];
     }),
   );
-  files.set("SKILL.md", Buffer.from(portableSkillText(files.get("SKILL.md").toString())));
   files.set("LICENSE", readSourceFile(join(ROOT, "LICENSE")));
   return files;
 }

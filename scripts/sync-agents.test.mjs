@@ -80,20 +80,18 @@ test("installs portable skills and detects content drift", (t) => {
   );
   assert.deepEqual(Object.keys(manifest).sort(), [
     "building-copilot-features",
-    "deploying",
     "investigating-postgres",
     "managing-drizzle-migrations",
-    "stacking-prs",
   ]);
-  assert.match(manifest.deploying.integrity, /^sha256-[a-f0-9]{64}$/);
-  assert.match(manifest.deploying.revision, /^[a-f0-9]{40}(?:-dirty)?$/);
+  assert.match(manifest["investigating-postgres"].integrity, /^sha256-[a-f0-9]{64}$/);
+  assert.match(manifest["investigating-postgres"].revision, /^[a-f0-9]{40}(?:-dirty)?$/);
   assert.match(
-    readFileSync(join(repo, ".agents", "skills", "deploying", "LICENSE"), "utf8"),
+    readFileSync(join(repo, ".agents", "skills", "investigating-postgres", "LICENSE"), "utf8"),
     /MIT License/,
   );
   assert.equal(existsSync(join(repo, ".opencode")), false);
 
-  const skillPath = join(repo, ".agents", "skills", "deploying", "SKILL.md");
+  const skillPath = join(repo, ".agents", "skills", "investigating-postgres", "SKILL.md");
   writeFileSync(
     skillPath,
     readFileSync(skillPath, "utf8").replaceAll("\n", "\r\n"),
@@ -101,17 +99,17 @@ test("installs portable skills and detects content drift", (t) => {
   assert.equal(run("--check", repo).status, 0);
 
   appendFileSync(
-    join(repo, ".agents", "skills", "deploying", "SKILL.md"),
+    join(repo, ".agents", "skills", "investigating-postgres", "SKILL.md"),
     "\nlocal drift\n",
   );
   const check = run("--check", repo);
   assert.equal(check.status, 1);
-  assert.match(check.stderr, /deploying\/SKILL\.md: differs from source/);
+  assert.match(check.stderr, /investigating-postgres\/SKILL\.md: differs from source/);
 });
 
 test("refuses to overwrite an unrelated skill before installing anything", (t) => {
   const repo = tempRepo(t);
-  const skill = join(repo, ".agents", "skills", "deploying");
+  const skill = join(repo, ".agents", "skills", "investigating-postgres");
   mkdirSync(skill, { recursive: true });
   writeFileSync(join(skill, "SKILL.md"), "unrelated\n");
 
@@ -154,7 +152,7 @@ test("rejects unsafe manifest keys without deleting outside the skills directory
 test("refuses to overwrite a locally modified owned skill", (t) => {
   const repo = tempRepo(t);
   assert.equal(run("--install-repo", repo).status, 0);
-  const skill = join(repo, ".agents", "skills", "deploying", "SKILL.md");
+  const skill = join(repo, ".agents", "skills", "investigating-postgres", "SKILL.md");
   appendFileSync(skill, "\nlocal change\n");
 
   const install = run("--install-repo", repo);
@@ -167,9 +165,9 @@ test("migrates a pre-canonical Windows skill manifest", (t) => {
   const repo = tempRepo(t);
   assert.equal(run("--install-repo", repo).status, 0);
   const skills = join(repo, ".agents", "skills");
-  const deploying = join(skills, "deploying");
-  rmSync(join(deploying, "LICENSE"));
-  for (const file of walkFiles(deploying)) {
+  const skillDir = join(skills, "investigating-postgres");
+  rmSync(join(skillDir, "LICENSE"));
+  for (const file of walkFiles(skillDir)) {
     if (/\.(?:json|md|txt|ya?ml)$/i.test(file)) {
       writeFileSync(
         file,
@@ -181,17 +179,17 @@ test("migrates a pre-canonical Windows skill manifest", (t) => {
   }
   const manifestPath = join(skills, ".knowtis-plugins-manifest.json");
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-  manifest.deploying.integrity = legacyWindowsIntegrity(deploying, true);
+  manifest["investigating-postgres"].integrity = legacyWindowsIntegrity(skillDir, true);
   writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
 
   const install = run("--install-repo", repo);
   assert.equal(install.status, 0, install.stderr);
   assert.equal(run("--check", repo).status, 0);
-  assert.match(readFileSync(join(deploying, "LICENSE"), "utf8"), /MIT License/);
+  assert.match(readFileSync(join(skillDir, "LICENSE"), "utf8"), /MIT License/);
 
-  rmSync(join(deploying, "LICENSE"));
+  rmSync(join(skillDir, "LICENSE"));
   const migratedManifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-  migratedManifest.deploying.integrity = legacyWindowsIntegrity(deploying, false);
+  migratedManifest["investigating-postgres"].integrity = legacyWindowsIntegrity(skillDir, false);
   writeFileSync(manifestPath, JSON.stringify(migratedManifest, null, 2) + "\n");
   assert.equal(run("--install-repo", repo).status, 0);
   assert.equal(run("--check", repo).status, 0);
@@ -284,9 +282,9 @@ test("recovers interrupted skill swaps before reinstalling", (t) => {
   const skills = join(repo, ".agents", "skills");
   const skillStageName = ".knowtis-plugins-stage-test123";
   const skillStage = join(skills, skillStageName);
-  const skill = join(skills, "deploying");
+  const skill = join(skills, "investigating-postgres");
   mkdirSync(join(skillStage, "backup"), { recursive: true });
-  renameSync(skill, join(skillStage, "backup", "deploying"));
+  renameSync(skill, join(skillStage, "backup", "investigating-postgres"));
   mkdirSync(skill);
   writeFileSync(join(skill, "SKILL.md"), "interrupted\n");
   writeFileSync(
@@ -295,7 +293,7 @@ test("recovers interrupted skill swaps before reinstalling", (t) => {
       version: 1,
       stage: skillStageName,
       hadManifest: true,
-      swaps: [{ name: "deploying", hadDestination: true }],
+      swaps: [{ name: "investigating-postgres", hadDestination: true }],
       committed: false,
     }),
   );
@@ -330,21 +328,21 @@ test("recovers an interrupted global install before uninstalling", (t) => {
   const stageName = ".knowtis-plugins-stage-uninstall";
   const stage = join(skills, stageName);
   mkdirSync(join(stage, "backup"), { recursive: true });
-  renameSync(join(skills, "deploying"), join(stage, "backup", "deploying"));
+  renameSync(join(skills, "investigating-postgres"), join(stage, "backup", "investigating-postgres"));
   writeFileSync(
     join(skills, ".knowtis-skills-transaction.json"),
     JSON.stringify({
       version: 1,
       stage: stageName,
       hadManifest: true,
-      swaps: [{ name: "deploying", hadDestination: true }],
+      swaps: [{ name: "investigating-postgres", hadDestination: true }],
       committed: false,
     }),
   );
 
   const uninstall = runWithEnv(homeEnv, "--uninstall-global");
   assert.equal(uninstall.status, 0, uninstall.stderr);
-  assert.equal(existsSync(join(skills, "deploying")), false);
+  assert.equal(existsSync(join(skills, "investigating-postgres")), false);
   assert.equal(
     existsSync(join(skills, ".knowtis-plugins-manifest.json")),
     false,
