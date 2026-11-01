@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 // Emits the marketplace's skills to the cross-tool `.agents/skills/` layout
-// (read natively by Codex, Cursor, Gemini CLI, and OpenCode) plus an
-// OpenCode-format knowtis-architect agent. Claude Code keeps consuming the
-// plugins directly and does not read `.agents/`.
+// (read natively by Codex, Cursor, Gemini CLI, and OpenCode). Claude Code keeps
+// consuming the plugins directly and does not read `.agents/`.
 //
 //   node scripts/sync-agents.mjs                    # emit to dist/
 //   node scripts/sync-agents.mjs --install-repo <path>
@@ -31,22 +30,9 @@ import { createHash } from "node:crypto";
 
 const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 const PLUGINS_DIR = join(ROOT, "plugins");
-const ARCHITECT_SRC = join(
-  PLUGINS_DIR,
-  "domain",
-  "agents",
-  "knowtis-architect.md",
-);
 const MANIFEST_NAME = ".knowtis-plugins-manifest.json";
-const ARCHITECT_NAME = "knowtis-architect.md";
-const AGENT_LICENSE_NAME = "knowtis-plugins-LICENSE";
-const AGENT_TRANSACTION_NAME = ".knowtis-agent-transaction.json";
 const SKILL_TRANSACTION_NAME = ".knowtis-skills-transaction.json";
 const SKILL_NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const LEGACY_AGENT_INTEGRITIES = new Set([
-  "sha256-ee77a45dd61faa8026e9def002ca73203608c073769eb01726134292d6d6b67b",
-  "sha256-6540a83a386739bc8d06cf82ee42bf8cedb133b5e05c645a11f794004131055a",
-]);
 const SOURCE_COMMIT = execFileSync("git", ["rev-parse", "HEAD"], {
   cwd: ROOT,
   encoding: "utf8",
@@ -86,11 +72,7 @@ function assertSafeInstallRoot(path) {
 }
 
 function assertSafeEmissionRoot(outDir) {
-  for (const candidate of [
-    outDir,
-    join(outDir, ".agents"),
-    join(outDir, ".opencode"),
-  ]) {
+  for (const candidate of [outDir, join(outDir, ".agents")]) {
     if (lstatOrNull(candidate)?.isSymbolicLink()) {
       console.error(`✗ ${candidate} is a symlink — refusing to replace it`);
       process.exit(1);
@@ -192,57 +174,6 @@ function collectSkills() {
   return skills;
 }
 
-function buildOpencodeAgent() {
-  const text = readSourceFile(ARCHITECT_SRC)
-    .toString()
-    .replaceAll("\r\n", "\n");
-  const end = text.indexOf("\n---", 4);
-  const frontmatter = text.slice(4, end);
-  const body = text.slice(end + 4).trimStart();
-
-  const descLines = [];
-  let inDesc = false;
-  for (const line of frontmatter.split("\n")) {
-    if (line.startsWith("description:")) {
-      inDesc = true;
-      continue;
-    }
-    if (inDesc) {
-      if (!line.startsWith("  ") || line.trim().startsWith("<example>")) break;
-      if (line.trim()) descLines.push(line.trim());
-    }
-  }
-  const description = descLines.join(" ");
-
-  return [
-    "---",
-    `description: ${description}`,
-    "mode: subagent",
-    "permission:",
-    '  "*": deny',
-    "  read: allow",
-    "  grep: allow",
-    "  glob: allow",
-    "  list: allow",
-    "  skill: allow",
-    "---",
-    "",
-    body,
-  ].join("\n");
-}
-
-function domainVersion() {
-  return JSON.parse(
-    readSourceFile(
-      join(PLUGINS_DIR, "domain", ".claude-plugin", "plugin.json"),
-    ).toString(),
-  ).version;
-}
-
-function contentIntegrity(content) {
-  return `sha256-${createHash("sha256").update(content).digest("hex")}`;
-}
-
 function portablePath(path) {
   return path.split(sep).join("/");
 }
@@ -254,283 +185,8 @@ function portableContent(path, content) {
   return Buffer.from(content.toString().replaceAll("\r\n", "\n"));
 }
 
-function agentManifest() {
-  const source = `domain@${domainVersion()}`;
-  return {
-    [ARCHITECT_NAME]: {
-      source,
-      revision: SOURCE_REVISION,
-      integrity: contentIntegrity(
-        portableContent(ARCHITECT_NAME, Buffer.from(buildOpencodeAgent())),
-      ),
-    },
-    [AGENT_LICENSE_NAME]: {
-      source,
-      revision: SOURCE_REVISION,
-      integrity: contentIntegrity(
-        portableContent(
-          AGENT_LICENSE_NAME,
-          readSourceFile(join(ROOT, "LICENSE")),
-        ),
-      ),
-    },
-  };
-}
-
-function readAgentOwnership(agentsOut) {
-  const manifestPath = join(agentsOut, MANIFEST_NAME);
-  const stats = lstatOrNull(manifestPath);
-  if (!stats) return false;
-  if (stats.isSymbolicLink()) {
-    console.error(`✗ ${manifestPath}: ownership manifest must not be a symlink`);
-    process.exit(1);
-  }
-
-  let manifest;
-  try {
-    manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-  } catch (error) {
-    console.error(`✗ ${manifestPath}: invalid ownership manifest (${error.message})`);
-    process.exit(1);
-  }
-  const entry = manifest?.[ARCHITECT_NAME];
-  if (typeof entry === "string" && /^domain@\d+\.\d+\.\d+$/.test(entry)) {
-    const agentPath = join(agentsOut, ARCHITECT_NAME);
-    const agentStats = lstatOrNull(agentPath);
-    if (
-      !agentStats ||
-      agentStats.isSymbolicLink() ||
-      !LEGACY_AGENT_INTEGRITIES.has(
-        contentIntegrity(
-          readFileSync(agentPath, "utf8").replaceAll("\r\n", "\n"),
-        ),
-      )
-    ) {
-      console.error(
-        `✗ ${relative(homedir(), agentPath)} does not match a known legacy installation — refusing to overwrite`,
-      );
-      process.exit(1);
-    }
-    return "legacy";
-  }
-  for (const name of [ARCHITECT_NAME, AGENT_LICENSE_NAME]) {
-    const ownedEntry = manifest?.[name];
-    if (
-      !ownedEntry ||
-      typeof ownedEntry !== "object" ||
-      Array.isArray(ownedEntry) ||
-      !/^domain@\d+\.\d+\.\d+$/.test(ownedEntry.source ?? "") ||
-      !/^[a-f0-9]{40}(?:-dirty)?$/.test(ownedEntry.revision ?? "") ||
-      !/^sha256-[a-f0-9]{64}$/.test(ownedEntry.integrity ?? "")
-    ) {
-      console.error(`✗ ${manifestPath}: invalid ownership entry for ${name}`);
-      process.exit(1);
-    }
-    const path = join(agentsOut, name);
-    const pathStats = lstatOrNull(path);
-    if (pathStats?.isSymbolicLink()) {
-      console.error(`✗ ${path} is a symlink — refusing to follow it`);
-      process.exit(1);
-    }
-    if (
-      pathStats &&
-      contentIntegrity(portableContent(name, readFileSync(path))) !==
-        ownedEntry.integrity
-    ) {
-      console.error(
-        `✗ ${relative(homedir(), path)} was modified after installation — refusing to overwrite`,
-      );
-      process.exit(1);
-    }
-  }
-  return "modern";
-}
-
-function recoverAgentTransaction(agentsOut) {
-  const transactionPath = join(agentsOut, AGENT_TRANSACTION_NAME);
-  const transaction = readTransaction(
-    transactionPath,
-    /^\.knowtis-agent-stage-[A-Za-z0-9]+$/,
-  );
-  if (!transaction) return;
-  if (
-    typeof transaction.hadAgent !== "boolean" ||
-    typeof transaction.hadManifest !== "boolean" ||
-    typeof transaction.hadLicense !== "boolean"
-  ) {
-    console.error(`✗ ${transactionPath}: invalid agent transaction journal`);
-    process.exit(1);
-  }
-  const stage = join(agentsOut, transaction.stage);
-  const stageStats = lstatOrNull(stage);
-  if (transaction.committed && !stageStats) {
-    rmSync(transactionPath, { force: true });
-    return;
-  }
-  if (!stageStats || stageStats.isSymbolicLink() || !stageStats.isDirectory()) {
-    console.error(`✗ ${transactionPath}: agent transaction stage is unavailable`);
-    process.exit(1);
-  }
-  if (!transaction.committed) {
-    for (const [destination, backup, hadDestination] of [
-      [
-        join(agentsOut, MANIFEST_NAME),
-        join(stage, "manifest.backup"),
-        transaction.hadManifest,
-      ],
-      [
-        join(agentsOut, ARCHITECT_NAME),
-        join(stage, "agent.backup"),
-        transaction.hadAgent,
-      ],
-      [
-        join(agentsOut, AGENT_LICENSE_NAME),
-        join(stage, "license.backup"),
-        transaction.hadLicense,
-      ],
-    ]) {
-      if (lstatOrNull(backup)) {
-        rmSync(destination, { recursive: true, force: true });
-        renameSync(backup, destination);
-      } else if (!hadDestination) {
-        rmSync(destination, { recursive: true, force: true });
-      }
-    }
-  }
-  rmSync(stage, { recursive: true, force: true });
-  rmSync(transactionPath, { force: true });
-}
-
-function assertAgentInstallable(agentsOut) {
-  assertSafeInstallRoot(agentsOut);
-  recoverAgentTransaction(agentsOut);
-  const agentPath = join(agentsOut, ARCHITECT_NAME);
-  const owned = readAgentOwnership(agentsOut);
-  const stats = lstatOrNull(agentPath);
-  const licensePath = join(agentsOut, AGENT_LICENSE_NAME);
-  const licenseStats = lstatOrNull(licensePath);
-  if (licenseStats?.isSymbolicLink()) {
-    console.error(`✗ ${licensePath} is a symlink — refusing to follow it`);
-    process.exit(1);
-  }
-  if (licenseStats && owned !== "modern") {
-    console.error(`✗ ${licensePath} exists but is not owned by knowtis-plugins`);
-    process.exit(1);
-  }
-  if (!stats) return;
-  if (stats.isSymbolicLink()) {
-    console.error(`✗ ${agentPath} is a symlink — refusing to follow it`);
-    process.exit(1);
-  }
-  if (readFileSync(agentPath, "utf8") === buildOpencodeAgent()) return;
-  if (owned) return;
-
-  console.error(
-    `✗ ${relative(homedir(), agentPath)} exists but is not owned by knowtis-plugins — refusing to overwrite`,
-  );
-  process.exit(1);
-}
-
-function installOpencodeAgent(agentsOut) {
-  assertAgentInstallable(agentsOut);
-  mkdirSync(agentsOut, { recursive: true });
-  const stage = mkdtempSync(join(agentsOut, ".knowtis-agent-stage-"));
-  const pendingAgent = join(stage, ARCHITECT_NAME);
-  const pendingManifest = join(stage, MANIFEST_NAME);
-  const pendingLicense = join(stage, AGENT_LICENSE_NAME);
-  const agentPath = join(agentsOut, ARCHITECT_NAME);
-  const licensePath = join(agentsOut, AGENT_LICENSE_NAME);
-  const manifestPath = join(agentsOut, MANIFEST_NAME);
-  const agentBackup = join(stage, "agent.backup");
-  const manifestBackup = join(stage, "manifest.backup");
-  const licenseBackup = join(stage, "license.backup");
-  const hadAgent = Boolean(lstatOrNull(agentPath));
-  const hadLicense = Boolean(lstatOrNull(licensePath));
-  const hadManifest = Boolean(lstatOrNull(manifestPath));
-  const transactionPath = join(agentsOut, AGENT_TRANSACTION_NAME);
-  const transaction = {
-    version: 1,
-    stage: basename(stage),
-    hadAgent,
-    hadLicense,
-    hadManifest,
-    committed: false,
-  };
-
-  writeTransaction(transactionPath, transaction);
-  try {
-    writeFileSync(pendingAgent, buildOpencodeAgent(), { flag: "wx" });
-    writeFileSync(pendingLicense, readSourceFile(join(ROOT, "LICENSE")), {
-      flag: "wx",
-    });
-    writeFileSync(
-      pendingManifest,
-      JSON.stringify(agentManifest(), null, 2) + "\n",
-      { flag: "wx" },
-    );
-    if (hadAgent) renameSync(agentPath, agentBackup);
-    renameSync(pendingAgent, agentPath);
-    if (hadLicense) renameSync(licensePath, licenseBackup);
-    renameSync(pendingLicense, licensePath);
-    if (hadManifest) renameSync(manifestPath, manifestBackup);
-    renameSync(pendingManifest, manifestPath);
-    transaction.committed = true;
-    writeTransaction(transactionPath, transaction);
-  } catch (error) {
-    recoverAgentTransaction(agentsOut);
-    throw error;
-  }
-  rmSync(stage, { recursive: true, force: true });
-  rmSync(transactionPath, { force: true });
-}
-
-function checkOpencodeAgent(agentsOut) {
-  assertSafeInstallRoot(agentsOut);
-  const drift = [];
-  const agentPath = join(agentsOut, ARCHITECT_NAME);
-  const manifestPath = join(agentsOut, MANIFEST_NAME);
-  const licensePath = join(agentsOut, AGENT_LICENSE_NAME);
-  for (const path of [agentPath, manifestPath, licensePath]) {
-    if (lstatOrNull(path)?.isSymbolicLink()) {
-      console.error(`✗ ${path} is a symlink — refusing to follow it`);
-      process.exit(1);
-    }
-  }
-  if (
-    !existsSync(agentPath) ||
-    portableContent(ARCHITECT_NAME, readFileSync(agentPath)).toString() !==
-      buildOpencodeAgent()
-  ) {
-    drift.push(`.opencode/agents/${ARCHITECT_NAME}: differs from source`);
-  }
-  if (
-    !existsSync(licensePath) ||
-    !portableContent(AGENT_LICENSE_NAME, readFileSync(licensePath)).equals(
-      portableContent(
-        AGENT_LICENSE_NAME,
-        readSourceFile(join(ROOT, "LICENSE")),
-      ),
-    )
-  ) {
-    drift.push(`.opencode/agents/${AGENT_LICENSE_NAME}: differs from source`);
-  }
-  const installedManifest = existsSync(manifestPath)
-    ? JSON.parse(readFileSync(manifestPath, "utf8"))
-    : null;
-  if (JSON.stringify(installedManifest) !== JSON.stringify(agentManifest())) {
-    drift.push(`.opencode/agents/${MANIFEST_NAME}: differs from source`);
-  }
-  return drift;
-}
-
-function portableSkillText(text) {
-  return text.replace(/^disable-model-invocation:.*\n/m, "");
-}
-
 function copyPortableSkill(src, dest) {
   cpSync(src, dest, { recursive: true });
-  const skillPath = join(dest, "SKILL.md");
-  writeFileSync(skillPath, portableSkillText(readFileSync(skillPath, "utf8")));
   writeFileSync(join(dest, "LICENSE"), readSourceFile(join(ROOT, "LICENSE")));
 }
 
@@ -541,7 +197,6 @@ function portableFiles(dir) {
       return [path, portableContent(path, readFileSync(file))];
     }),
   );
-  files.set("SKILL.md", Buffer.from(portableSkillText(files.get("SKILL.md").toString())));
   files.set("LICENSE", readSourceFile(join(ROOT, "LICENSE")));
   return files;
 }
@@ -724,7 +379,6 @@ function emit(outDir) {
   assertSafeEmissionRoot(outDir);
   const skillsOut = join(outDir, ".agents", "skills");
   rmSync(join(outDir, ".agents"), { recursive: true, force: true });
-  rmSync(join(outDir, ".opencode"), { recursive: true, force: true });
   mkdirSync(skillsOut, { recursive: true });
   const skills = collectSkills();
   const manifest = {};
@@ -737,9 +391,6 @@ function emit(outDir) {
     join(skillsOut, MANIFEST_NAME),
     JSON.stringify(manifest, null, 2) + "\n",
   );
-
-  const agentsOut = join(outDir, ".opencode", "agents");
-  installOpencodeAgent(agentsOut);
 
   return skills.size;
 }
@@ -925,13 +576,8 @@ if (mode === "--install-repo") {
     console.error("usage: sync-agents.mjs --install-repo <repo-path>");
     process.exit(1);
   }
-  const agentsOut = join(arg, ".opencode", "agents");
-  assertAgentInstallable(agentsOut);
   const count = installSkills(join(arg, ".agents", "skills"));
-  installOpencodeAgent(agentsOut);
-  console.log(
-    `OK — ${count} skills → ${arg}/.agents/skills, architect agent → ${arg}/.opencode/agents`,
-  );
+  console.log(`OK — ${count} skills → ${arg}/.agents/skills`);
 } else if (mode === "--install-global") {
   const count = installSkills(join(homedir(), ".agents", "skills"));
   console.log(
@@ -947,32 +593,25 @@ if (mode === "--install-repo") {
     console.error("usage: sync-agents.mjs --check <repo-path|skills-dir>");
     process.exit(1);
   }
-  const isRepo = existsSync(join(arg, ".agents", "skills"));
-  const dir = isRepo ? join(arg, ".agents", "skills") : arg;
-  const result = checkSkills(dir);
+  const repoSkills = join(arg, ".agents", "skills");
+  const result = checkSkills(existsSync(repoSkills) ? repoSkills : arg);
   const drift = result.drift;
-  if (isRepo)
-    drift.push(...checkOpencodeAgent(join(arg, ".opencode", "agents")));
   if (drift.length > 0) {
     console.error(`DRIFT — ${drift.length} difference(s):`);
     for (const item of drift) console.error(`  ✗ ${item}`);
     process.exit(1);
   }
-  console.log(
-    `OK — ${result.count} skills${isRepo ? " and OpenCode agent" : ""} in sync at ${arg}`,
-  );
+  console.log(`OK — ${result.count} skills in sync at ${arg}`);
 } else if (mode === "--output") {
   if (!arg) {
     console.error("usage: sync-agents.mjs --output <path>");
     process.exit(1);
   }
   const count = emit(resolve(arg));
-  console.log(`OK — ${count} skills and architect agent emitted at ${arg}`);
+  console.log(`OK — ${count} skills emitted at ${arg}`);
 } else if (mode === undefined) {
   const count = emit(join(ROOT, "dist"));
-  console.log(
-    `OK — ${count} skills → dist/.agents/skills, architect agent → dist/.opencode/agents`,
-  );
+  console.log(`OK — ${count} skills → dist/.agents/skills`);
 } else {
   console.error(
     "usage: sync-agents.mjs [--install-repo <path> | --install-global | --uninstall-global | --check <path> | --output <path>]",

@@ -4,6 +4,13 @@ All notable changes to the `db-ops` plugin.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.4] - 2026-11-01
+
+### Changed
+
+- Remove the retired `agent_byok` and `agent_web_search` flags from the schema map.
+- Shorten the skill descriptions to lower their always-on cost.
+
 ## [0.1.3] - 2026-08-30
 
 ### Changed

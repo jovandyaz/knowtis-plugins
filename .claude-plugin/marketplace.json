@@ -4,7 +4,7 @@
   "owner": { "name": "jovandyaz", "email": "jovannotty@gmail.com" },
   "metadata": {
     "description": "Claude Code plugins and Agent Skills for the Knowtis platform",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "plugins": [
     {
@@ -15,18 +15,11 @@
       "keywords": ["drizzle", "postgres", "migrations"]
     },
     {
-      "name": "delivery",
-      "source": "./plugins/delivery",
-      "description": "Knowtis CI readiness, stacked PRs, and CI-driven Vercel/Railway deployment diagnosis.",
-      "category": "deployment",
-      "keywords": ["nx", "gh-stack", "vercel", "railway"]
-    },
-    {
       "name": "domain",
       "source": "./plugins/domain",
-      "description": "Knowtis domain knowledge: architecture orientation, copilot/AI-gateway invariants, realtime-collaboration rules, and a read-only architect agent.",
+      "description": "Knowtis domain knowledge: copilot/AI-gateway safety invariants.",
       "category": "development",
-      "keywords": ["architecture", "copilot", "crdt", "domain-expert"]
+      "keywords": ["copilot", "ai-gateway", "domain-expert"]
     }
   ]
 }

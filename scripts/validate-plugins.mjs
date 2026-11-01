@@ -15,7 +15,6 @@ const SKILL_FIELDS = new Set([
   "compatibility",
   "metadata",
   "allowed-tools",
-  "disable-model-invocation",
 ]);
 
 const SECRET_PATTERNS = [

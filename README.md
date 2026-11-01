@@ -19,8 +19,7 @@ Knowtis skills are project-scoped. The Knowtis repository declares this marketpl
   },
   "enabledPlugins": {
     "domain@knowtis-plugins": true,
-    "db-ops@knowtis-plugins": true,
-    "delivery@knowtis-plugins": true
+    "db-ops@knowtis-plugins": true
   }
 }
 ```
@@ -30,8 +29,7 @@ Knowtis skills are project-scoped. The Knowtis repository declares this marketpl
 | Plugin | Category | What it provides |
 | --- | --- | --- |
 | [`db-ops`](plugins/db-ops/) | database | Drizzle migration discipline (`generate` → commit → `migrate`, never `push` on shared DBs) and a read-only Postgres investigation contract. |
-| [`delivery`](plugins/delivery/) | deployment | CI readiness and Nx-affected diagnosis, GitHub-native stacked PRs, and CI-driven Vercel/Railway deploy troubleshooting. |
-| [`domain`](plugins/domain/) | development | The project's tribal knowledge: architecture orientation, copilot/AI-gateway safety invariants, realtime-collaboration (Yjs/Hocuspocus) rules, and the read-only `knowtis-architect` agent. |
+| [`domain`](plugins/domain/) | development | Copilot/AI-gateway safety invariants. |
 
 Each plugin is versioned in its `.claude-plugin/plugin.json` with a matching `CHANGELOG.md`.
 
@@ -43,7 +41,7 @@ Codex, Cursor, Gemini CLI, and OpenCode don't consume Claude Code plugins. Vendo
 node scripts/sync-agents.mjs --install-repo /path/to/knowtis-app
 ```
 
-Re-running is idempotent: the tamper-evident ownership manifest refuses locally modified or unrelated skills, records the source revision and content hashes, and prunes stale names. Dirty source trees are marked in that revision. The manifest protects against accidental replacement; it is not a security boundary against a user who can rewrite both installed content and its manifest. `--check <repo>` verifies skills plus the generated OpenCode agent. `--output <dir>` replaces only the generated `.agents` and `.opencode` trees and should target a dedicated output directory. Use `--uninstall-global` once when migrating an older user-global installation.
+Re-running is idempotent: the tamper-evident ownership manifest refuses locally modified or unrelated skills, records the source revision and content hashes, and prunes stale names. Dirty source trees are marked in that revision. The manifest protects against accidental replacement; it is not a security boundary against a user who can rewrite both installed content and its manifest. `--check <repo>` verifies the skills. `--output <dir>` replaces only the generated `.agents` tree and should target a dedicated output directory. Use `--uninstall-global` once when migrating an older user-global installation.
 
 | Tool | Reads skills from |
 | --- | --- |
