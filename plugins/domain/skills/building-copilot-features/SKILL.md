@@ -1,7 +1,7 @@
 ---
 name: building-copilot-features
 license: MIT
-description: Guides changes to the Knowtis copilot and AI subsystem — the agent module, ai-gateway, HITL proposals, injection guard, fallback chain, BYOK, hybrid retrieval, long-term memory, and the promptfoo eval harness. Use when adding an agent tool group, touching anything under apps/api/src/modules/agent or packages/ai-gateway, changing model selection or provider config, working near BYOK or memory extraction, or when asked about the "copilot", "agente", "AI gateway", or copilot evals. Not for the single-shot ai module UI features or general repo orientation (use orienting).
+description: Knowtis copilot, "agente", AI gateway, agent tool groups, HITL proposals, injection guard, fallback chain, BYOK, retrieval, memory, promptfoo evals. Use for apps/api/src/modules/agent or packages/ai-gateway work.
 ---
 
 # Building copilot features
