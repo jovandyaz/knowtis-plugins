@@ -1,7 +1,7 @@
 {
   "name": "domain",
-  "version": "0.3.1",
-  "description": "Knowtis domain knowledge: monorepo architecture orientation, copilot/AI-gateway safety invariants, realtime-collaboration (Yjs/Hocuspocus) rules, and the read-only knowtis-architect agent for design review and deep Q&A.",
+  "version": "0.4.0",
+  "description": "Knowtis domain knowledge: copilot/AI-gateway safety invariants.",
   "author": {
     "name": "jovandyaz",
     "email": "jovannotty@gmail.com",
@@ -9,11 +9,8 @@
   },
   "license": "MIT",
   "keywords": [
-    "architecture",
     "copilot",
     "ai-gateway",
-    "crdt",
-    "yjs",
     "domain-expert"
   ]
 }

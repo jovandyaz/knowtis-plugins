@@ -4,6 +4,14 @@ All notable changes to the `delivery` plugin.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.5.0] - 2026-11-01
+
+### Changed
+
+- Make `deploying` manual with `disable-model-invocation: true`.
+- Correct the AI-routes troubleshooting row: `ai_enabled` off answers `403`, and fresh-database intent models need `OPENROUTER_API_KEY`.
+- Shorten the `stacking-prs` description to lower its always-on cost.
+
 ## [0.4.0] - 2026-08-30
 
 ### Changed
