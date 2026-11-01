@@ -1,6 +1,7 @@
 ---
 name: deploying
 license: MIT
+disable-model-invocation: true
 description: Diagnoses and verifies Knowtis delivery from local Nx checks through CI-driven Vercel and Railway deploys. Use when asked what a change affects, to reproduce CI, run a full preflight or readiness check, explain why a deploy did not trigger, troubleshoot a failed or hanging deploy, or configure deployment environments. Covers lint, typecheck, tests, builds, migration drift, deploy gates, health checks, and terminal status. Not for changing the database schema (use managing-drizzle-migrations).
 ---
 
