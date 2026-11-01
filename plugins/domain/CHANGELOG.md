@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- Correct `building-copilot-features` against current code: MCP is a separate surface under `McpScopeGuard`, memories never authorize actions, the fallback chain comes from the `ai_fallback_chain` row or the served intents, `ai_enabled` is the only DB flag, and the model catalog is the synced `ai_model_index`.
+- Correct `building-copilot-features` against current code: MCP is a separate surface under `McpScopeGuard`, memories never authorize actions, the fallback chain comes from the `ai_fallback_chain` row or the served intents, `ai_enabled` is the only DB flag, and the model catalog is the synced `ai_model_index`, tool groups implement `availableIn(phase)` and `build(ctx)`, `retrieval.port` maps to the hybrid adapter, and scheduled workflows run the evals.
 - Shorten the `building-copilot-features` description to lower its always-on cost.
 
 ### Removed

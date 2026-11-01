@@ -19,7 +19,7 @@ The copilot is a **server-authoritative** conversational agent (`apps/api/src/mo
 
 ## Standard workflows
 
-- **New agent tool group**: create `infrastructure/tools/<name>.tool-group.ts` implementing `AgentToolGroup` (`readonly name` + `tools(ctx)` factory), register in `AgentToolRegistry` providers in `agent.module.ts`. Mutating tools MUST route through the proposal collector, never apply directly.
+- **New agent tool group**: create `infrastructure/tools/<name>.tool-group.ts` implementing `AgentToolGroup` (`readonly name`, `availableIn(phase)`, `build(ctx)`), register in `AgentToolRegistry` providers in `agent.module.ts`. Mutating tools MUST route through the proposal collector, never apply directly.
 - **Model/provider changes**: gateway mode (`AI_GATEWAY_API_KEY` set → Vercel AI Gateway, slash-format ids) vs direct mode; callers always use colon-format ids. Model catalog = the synced `ai_model_index` (a provider serves its `packages/ai-gateway/src/catalog` snapshot rows until it lists rows), with promoted rows filling in ids it does not list; resolution cascade conversation → account → system default.
 - **Retrieval changes**: hybrid = Postgres FTS `ts_rank` + pgvector KNN fused with RRF; embedding reconcile cron every 2 min behind advisory lock `778493001` (memory extraction uses `778493002`).
 - **Any behavior change**: add or update a promptfoo eval before merging — see [references/eval-workflow.md](references/eval-workflow.md).
