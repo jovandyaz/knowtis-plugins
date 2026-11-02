@@ -4,6 +4,12 @@ All notable changes to the `domain` plugin.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.1] - 2026-11-02
+
+### Changed
+
+- `building-copilot-features` names the shared core `@jovandyaz/llm-router`, an npm package with its own repo, instead of the in-repo `ai-gateway` package it replaced.
+
 ## [0.4.0] - 2026-11-01
 
 ### Changed
