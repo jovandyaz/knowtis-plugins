@@ -1,12 +1,12 @@
 ---
 name: building-copilot-features
 license: MIT
-description: Knowtis copilot, "agente", AI gateway, agent tool groups, HITL proposals, injection guard, fallback chain, BYOK, retrieval, memory, promptfoo evals. Use for apps/api/src/modules/agent or packages/ai-gateway work.
+description: Knowtis copilot, "agente", LLM router, agent tool groups, HITL proposals, injection guard, fallback chain, BYOK, retrieval, memory, promptfoo evals. Use for apps/api/src/modules/agent or packages/ai-gateway work.
 ---
 
 # Building copilot features
 
-The copilot is a **server-authoritative** conversational agent (`apps/api/src/modules/agent/`) on top of the framework-free `@knowtis/ai-gateway`. Safety invariants below are load-bearing — a change that violates one is a bug even if tests pass. Details: [references/safety-invariants.md](references/safety-invariants.md), [references/module-map.md](references/module-map.md), [references/eval-workflow.md](references/eval-workflow.md).
+The copilot is a **server-authoritative** conversational agent (`apps/api/src/modules/agent/`) on top of the framework-free [`@jovandyaz/llm-router`](https://github.com/jovandyaz/llm-router) (npm dependency; change it there, never in Knowtis). Safety invariants below are load-bearing — a change that violates one is a bug even if tests pass. Details: [references/safety-invariants.md](references/safety-invariants.md), [references/module-map.md](references/module-map.md), [references/eval-workflow.md](references/eval-workflow.md).
 
 ## Invariants you must never break
 
